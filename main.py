@@ -2,10 +2,10 @@
 # pyside2-uic ui/mainwindow.ui -o ui_mainwindow.py
 # pyrcc5 ressources.qrc -o ressources_rc.py
 
-USERNAME = "username"
-PASSWORD = "password"
+
 
 import sys
+from database import *
 ########################################################################
 # IMPORT GUI FILE
 from ui_login import *
@@ -38,7 +38,7 @@ class LoginWindow(QMainWindow):
         username = self.ui.username
         password = self.ui.password
                 
-        if username.text() == USERNAME and password.text() == PASSWORD:
+        if login(username.text(),password.text()):
             print('Correct !')
             self.hide()
             mainwindow.show()
