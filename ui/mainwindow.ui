@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1038</width>
-    <height>644</height>
+    <width>1003</width>
+    <height>688</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,8 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget"/>
  </widget>
- <resources>
-  <include location="ressources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

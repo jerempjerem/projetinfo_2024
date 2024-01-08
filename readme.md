@@ -12,3 +12,4 @@ pip install pyqt5-tools
 * https://feathericons.com/
 * https://www.youtube.com/watch?v=adC48qZ8p5Y
 * https://khamisikibet.github.io/Docs-QT-PyQt-PySide-Custom-Widgets/docs/widgets/custom-qmainwindow
+* Si erreur "cairo not found" telecharger le .exe et cocher translation: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases
