@@ -203,8 +203,8 @@ class Ui_LoginWindow(object):
         self.minimizebtn.setText("")
         self.closebtn.setText("")
         self.label_2.setText(QCoreApplication.translate("LoginWindow", u"Log In", None))
-        self.username.setPlaceholderText(QCoreApplication.translate("LoginWindow", u"Username", None))
-        self.password.setPlaceholderText(QCoreApplication.translate("LoginWindow", u"Password", None))
+        self.username.setPlaceholderText(QCoreApplication.translate("LoginWindow", u"Nom d'utilisateur", None))
+        self.password.setPlaceholderText(QCoreApplication.translate("LoginWindow", u"Mot de passe", None))
         self.error_password.setText("")
         self.loginbtn.setText(QCoreApplication.translate("LoginWindow", u"Log In", None))
     # retranslateUi

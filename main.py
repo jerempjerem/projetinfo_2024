@@ -5,7 +5,7 @@
 
 
 import sys
-from database import *
+from database import Database
 ########################################################################
 # IMPORT GUI FILE
 from ui_login import *
@@ -17,6 +17,7 @@ from ui_mainwindow import *
 from Custom_Widgets import *
 ########################################################################
 
+db = Database()
 
 ########################################################################
 ## LOGIN WINDOW CLASS
@@ -30,23 +31,32 @@ class LoginWindow(QMainWindow):
         loadJsonStyle(self, self.ui, jsonFiles={"styles/loginstyle.json"})
         ########################################################################
 
-        ########################################################################       
+        ########################################################################   
+        self.ui.password.setEchoMode(QLineEdit.Password)    
         self.ui.loginbtn.clicked.connect(self.login)
+        
         self.show()
         
     def login(self):
-        username = self.ui.username
-        password = self.ui.password
-                
-        if login(username.text(),password.text()):
-            print('Correct !')
-            self.hide()
-            mainwindow.show()
-            
+       
+        query = f"SELECT Username, Mdp FROM EMPLOYES WHERE Username='{self.ui.username.text()}'"
+        result = db.fetch(query)
+        
+        if result:
+            password = result[0][1]
+            if password == self.ui.password.text():
+                self.hide()
+                mainwindow.show()
+            else:
+                self.ui.password.clear()
+                self.ui.error_password.setText("Mot de passe invalide")
         else:
-            username.clear()
-            password.clear()
-            self.ui.error_password.setText('Credentials error !')
+            self.clear_username_password()
+            self.ui.error_password.setText("Nom d'utilisateur invalide")
+                
+    def clear_username_password(self):
+        self.ui.username.clear()
+        self.ui.password.clear()
 
 
 ########################################################################
