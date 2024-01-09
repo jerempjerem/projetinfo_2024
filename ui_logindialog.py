@@ -146,6 +146,7 @@ class Ui_LoginDialog(object):
         self.verticalLayout_2.addWidget(self.username)
 
         self.password = QLineEdit(self.login_frame)
+        self.password.setEchoMode(QLineEdit.Password)
         self.password.setObjectName(u"password")
         self.password.setFont(font1)
         self.password.setStyleSheet(u"")

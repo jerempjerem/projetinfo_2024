@@ -26,15 +26,16 @@ class Database():
         
         return []
         
-    def edit(self, query: str):
+    def edit(self, query: str, variables: tuple = ()):
         """
         Fonction permettant de modifier une database donnée (INSERT, DELETE, CHANGE).
 
         :param query: requête SQL que l'on veut exécuter
+        :param variables: variables de la requete
         """ 
         if self.connect():
             cursor = self.connection.cursor()
-            cursor.execute(query)
+            cursor.execute(query, variables)
             self.connection.commit()
             cursor.close()
 

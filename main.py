@@ -2,10 +2,13 @@
 # pyside2-uic ui/mainwindow.ui -o ui_mainwindow.py
 # pyrcc5 ressources.qrc -o ressources_rc.py
 
-
+#MVC
 
 import sys
 import globals
+import functions
+import locale
+from datetime import datetime
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QWidget
@@ -21,6 +24,9 @@ from ui_mainwindow import *
 from Custom_Widgets import *
 ########################################################################
 
+# Configurer la locale en français
+locale.setlocale(locale.LC_TIME, 'fr_FR')
+
 db = Database()
 
 ########################################################################
@@ -32,11 +38,10 @@ class LoginDialog(QDialog):
         self.ui = Ui_LoginDialog()
         self.ui.setupUi(self)
 
-        loadJsonStyle(self, self.ui, jsonFiles={"styles/loginstyle.json"})
+        loadJsonStyle(self, self.ui, jsonFiles={"styles/style.json"})
         ########################################################################
 
-        ########################################################################   
-        self.ui.password.setEchoMode(QLineEdit.Password)    
+        ########################################################################       
         self.ui.loginbtn.clicked.connect(self.login)
         self.ui.closebtn.clicked.connect(self.exit)
         
@@ -74,17 +79,40 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.name.setText(globals.PRENOM_UTILISATEUR)
 
-        loadJsonStyle(self, self.ui, jsonFiles={"styles/mainstyle.json"})
+        loadJsonStyle(self, self.ui, jsonFiles={"styles/style.json"})
         ########################################################################
 
         ########################################################################      
+        
+        self.ui.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.ui.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        
+        ## Navigations des pages
         self.ui.planningBtn.clicked.connect(self._go_to_planning_page)
         self.ui.timelineBtn.clicked.connect(self._go_to_timeline_page)
         self.ui.editBtn.clicked.connect(self._go_to_edit_page)
-
-
+        
+        # Page Planning
+        self.ui.planningNextWeekBtn.clicked.connect(lambda: self._updates_planning_week(self.ui.planningsemaine, functions.planning_week[0], next_week=True))
+        self.ui.planningPrevWeekBtn.clicked.connect(lambda: self._updates_planning_week(self.ui.planningsemaine, functions.planning_week[0], previous_week=True))
+        # self.ui.planningPickerWeekBtn.clicked.connect()
+        
+        
+        
+        ## Initialisation des valeurs par default
+        self.ui.name.setText(globals.PRENOM_UTILISATEUR)
+        
+        current_date = datetime.now().strftime("%d/%m/%Y")
+        self._updates_planning_week(self.ui.planningsemaine, current_date)
+    
+    
+    def _updates_planning_week(self, plage_label: QLabel, date: str, previous_week : bool = False, next_week : bool = False):
+        
+        functions.planning_week = functions.get_weekdates(date, previous_week=previous_week, next_week=next_week)
+        planning_plage = functions.get_plage_dates(functions.planning_week)
+        plage_label.setText(planning_plage)
+    
     def _go_to_planning_page(self):
         self.ui.stackedplanning.setCurrentIndex(0)
 
@@ -109,11 +137,12 @@ if login.exec_() == QDialog.Accepted:
         mainwindow.show()
         sys.exit(app.exec_())
 
-# loginwindow = LoginWindow()
 
+globals.PRENOM_UTILISATEUR = "Jérémie"
+mainwindow = MainWindow()
+mainwindow.show()
 
-# loginwindow.show()
-# mainwindow.show()
+# sys.exit(app.exec_())
 
 ########################################################################
 ## END===>
