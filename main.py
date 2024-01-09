@@ -5,13 +5,13 @@
 
 
 import sys
+import globals
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QWidget
 from database import Database
 ########################################################################
 # IMPORT GUI FILE
-from ui_login import *
 from ui_logindialog import *
 from ui_mainwindow import *
 ########################################################################
@@ -21,7 +21,6 @@ from ui_mainwindow import *
 from Custom_Widgets import *
 ########################################################################
 
-PRENOM_UTILISATEUR = ""
 db = Database()
 
 ########################################################################
@@ -51,8 +50,8 @@ class LoginDialog(QDialog):
         
         if result:
             password = result[0][1]
-            PRENOM_UTILISATEUR = result[0][2]
-            print(PRENOM_UTILISATEUR)
+            globals.PRENOM_UTILISATEUR = result[0][2]
+
             if password == self.ui.password.text():
                 self.accept()
             else:
@@ -71,11 +70,11 @@ class LoginDialog(QDialog):
 ## MAIN WINDOW CLASS
 ########################################################################
 class MainWindow(QMainWindow):
-    def __init__(self, name: str):
+    def __init__(self):
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.ui.name.setText(name)
+        self.ui.name.setText(globals.PRENOM_UTILISATEUR)
 
         loadJsonStyle(self, self.ui, jsonFiles={"styles/mainstyle.json"})
         ########################################################################
@@ -105,8 +104,7 @@ app = QApplication(sys.argv)
 login = LoginDialog()
 
 if login.exec_() == QDialog.Accepted:
-        print(PRENOM_UTILISATEUR)
-        mainwindow = MainWindow(PRENOM_UTILISATEUR)
+        mainwindow = MainWindow()
         mainwindow.show()
         sys.exit(app.exec_())
 
