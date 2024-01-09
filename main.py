@@ -1,4 +1,4 @@
-# pyside2-uic ui/login.ui -o ui_login.py
+# pyside2-uic ui/logindialog.ui -o ui_logindialog.py
 # pyside2-uic ui/mainwindow.ui -o ui_mainwindow.py
 # pyrcc5 ressources.qrc -o ressources_rc.py
 
