@@ -5,10 +5,14 @@
 
 
 import sys
+
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QWidget
 from database import Database
 ########################################################################
 # IMPORT GUI FILE
 from ui_login import *
+from ui_logindialog import *
 from ui_mainwindow import *
 ########################################################################
 
@@ -17,15 +21,16 @@ from ui_mainwindow import *
 from Custom_Widgets import *
 ########################################################################
 
+PRENOM_UTILISATEUR = ""
 db = Database()
 
 ########################################################################
 ## LOGIN WINDOW CLASS
 ########################################################################
-class LoginWindow(QMainWindow):
+class LoginDialog(QDialog):
     def __init__(self):
-        QMainWindow.__init__(self)
-        self.ui = Ui_LoginWindow()
+        QDialog.__init__(self)
+        self.ui = Ui_LoginDialog()
         self.ui.setupUi(self)
 
         loadJsonStyle(self, self.ui, jsonFiles={"styles/loginstyle.json"})
@@ -34,19 +39,22 @@ class LoginWindow(QMainWindow):
         ########################################################################   
         self.ui.password.setEchoMode(QLineEdit.Password)    
         self.ui.loginbtn.clicked.connect(self.login)
+        self.ui.closebtn.clicked.connect(self.exit)
         
-        self.show()
+    def exit(self):
+        sys.exit(app.exec_())
         
     def login(self):
        
-        query = f"SELECT Username, Mdp FROM EMPLOYES WHERE Username='{self.ui.username.text()}'"
+        query = f"SELECT Username, Mdp, Prenom FROM EMPLOYES WHERE Username='{self.ui.username.text()}'"
         result = db.fetch(query)
         
         if result:
             password = result[0][1]
+            PRENOM_UTILISATEUR = result[0][2]
+            print(PRENOM_UTILISATEUR)
             if password == self.ui.password.text():
-                self.hide()
-                mainwindow.show()
+                self.accept()
             else:
                 self.ui.password.clear()
                 self.ui.error_password.setText("Mot de passe invalide")
@@ -57,21 +65,35 @@ class LoginWindow(QMainWindow):
     def clear_username_password(self):
         self.ui.username.clear()
         self.ui.password.clear()
-
-
+        
+        
 ########################################################################
 ## MAIN WINDOW CLASS
 ########################################################################
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, name: str):
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.ui.name.setText(name)
 
         loadJsonStyle(self, self.ui, jsonFiles={"styles/mainstyle.json"})
         ########################################################################
 
-        ########################################################################       
+        ########################################################################      
+        self.ui.planningBtn.clicked.connect(self._go_to_planning_page)
+        self.ui.timelineBtn.clicked.connect(self._go_to_timeline_page)
+        self.ui.editBtn.clicked.connect(self._go_to_edit_page)
+
+
+    def _go_to_planning_page(self):
+        self.ui.stackedplanning.setCurrentIndex(0)
+
+    def _go_to_timeline_page(self):
+        self.ui.stackedplanning.setCurrentIndex(1) 
+    
+    def _go_to_edit_page(self):
+        self.ui.stackedplanning.setCurrentIndex(2) 
 
         
 
@@ -80,9 +102,20 @@ class MainWindow(QMainWindow):
 ## EXECUTE APP
 ########################################################################
 app = QApplication(sys.argv)
-loginwindow = LoginWindow()
-mainwindow = MainWindow()
-sys.exit(app.exec_())
+login = LoginDialog()
+
+if login.exec_() == QDialog.Accepted:
+        print(PRENOM_UTILISATEUR)
+        mainwindow = MainWindow(PRENOM_UTILISATEUR)
+        mainwindow.show()
+        sys.exit(app.exec_())
+
+# loginwindow = LoginWindow()
+
+
+# loginwindow.show()
+# mainwindow.show()
+
 ########################################################################
 ## END===>
 ########################################################################  

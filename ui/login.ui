@@ -14,7 +14,11 @@
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QPushButton {
+   <string notr="true">* {
+letter-spacing: 1px;
+}
+
+QPushButton {
 	border: None;
 }</string>
   </property>

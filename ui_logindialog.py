@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'login.ui'
+## Form generated from reading UI file 'LoginDialog.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -11,30 +11,28 @@
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-from Custom_Widgets import *
 
 import ressources_rc
 
-class Ui_LoginWindow(object):
-    def setupUi(self, LoginWindow):
-        if not LoginWindow.objectName():
-            LoginWindow.setObjectName(u"LoginWindow")
-        LoginWindow.resize(955, 696)
-        LoginWindow.setStyleSheet(u"* {\n"
+class Ui_LoginDialog(object):
+    def setupUi(self, LoginDialog):
+        if not LoginDialog.objectName():
+            LoginDialog.setObjectName(u"LoginDialog")
+        LoginDialog.resize(955, 696)
+        LoginDialog.setStyleSheet(u"* {\n"
 "letter-spacing: 1px;\n"
 "}\n"
 "\n"
 "QPushButton {\n"
 "	border: None;\n"
 "}")
-        self.centralwidget = QWidget(LoginWindow)
-        self.centralwidget.setObjectName(u"centralwidget")
-        self.centralwidget.setStyleSheet(u"")
-        self.horizontalLayout = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_4 = QHBoxLayout(LoginDialog)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.leftside = QFrame(self.centralwidget)
+        self.leftside = QFrame(LoginDialog)
         self.leftside.setObjectName(u"leftside")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -58,7 +56,7 @@ class Ui_LoginWindow(object):
 
         self.horizontalLayout.addWidget(self.leftside)
 
-        self.rightside = QFrame(self.centralwidget)
+        self.rightside = QFrame(LoginDialog)
         self.rightside.setObjectName(u"rightside")
         self.rightside.setStyleSheet(u"#rightside {\n"
 "	background-color: rgb(255, 255, 255);\n"
@@ -194,22 +192,24 @@ class Ui_LoginWindow(object):
 
         self.horizontalLayout.addWidget(self.rightside)
 
-        LoginWindow.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi(LoginWindow)
+        self.horizontalLayout_4.addLayout(self.horizontalLayout)
 
-        QMetaObject.connectSlotsByName(LoginWindow)
+
+        self.retranslateUi(LoginDialog)
+
+        QMetaObject.connectSlotsByName(LoginDialog)
     # setupUi
 
-    def retranslateUi(self, LoginWindow):
-        LoginWindow.setWindowTitle(QCoreApplication.translate("LoginWindow", u"MainWindow", None))
+    def retranslateUi(self, LoginDialog):
+        LoginDialog.setWindowTitle(QCoreApplication.translate("LoginDialog", u"MainWindow", None))
         self.label.setText("")
         self.minimizebtn.setText("")
         self.closebtn.setText("")
-        self.label_2.setText(QCoreApplication.translate("LoginWindow", u"Log In", None))
-        self.username.setPlaceholderText(QCoreApplication.translate("LoginWindow", u"Nom d'utilisateur", None))
-        self.password.setPlaceholderText(QCoreApplication.translate("LoginWindow", u"Mot de passe", None))
+        self.label_2.setText(QCoreApplication.translate("LoginDialog", u"Log In", None))
+        self.username.setPlaceholderText(QCoreApplication.translate("LoginDialog", u"Nom d'utilisateur", None))
+        self.password.setPlaceholderText(QCoreApplication.translate("LoginDialog", u"Mot de passe", None))
         self.error_password.setText("")
-        self.loginbtn.setText(QCoreApplication.translate("LoginWindow", u"Log In", None))
+        self.loginbtn.setText(QCoreApplication.translate("LoginDialog", u"Log In", None))
     # retranslateUi
 

@@ -164,6 +164,7 @@
     <file>icons/minimize.svg</file>
     <file>icons/minimize-2.svg</file>
     <file>icons/minus.svg</file>
+    <file>icons/minus_white.svg</file>
     <file>icons/minus-circle.svg</file>
     <file>icons/minus-square.svg</file>
     <file>icons/monitor.svg</file>
@@ -279,6 +280,7 @@
     <file>icons/wifi-off.svg</file>
     <file>icons/wind.svg</file>
     <file>icons/x.svg</file>
+    <file>icons/x_white.svg</file>
     <file>icons/x-circle.svg</file>
     <file>icons/x-octagon.svg</file>
     <file>icons/x-square.svg</file>

@@ -1,7 +1,18 @@
 {
 	"QMainWindow":[
 		{
-			
+			"tittle":"PlannISEN",
+			"icon":"icons/logo_login.png",
+			"frameless": true,
+			"transluscentBg": true,
+			"navigation":[
+				{
+					"minimize":"minimizeBtn",
+					"close": "closeBtn",
+					"moveWindow": "headerContainer",
+					"tittleBar": "headerContainer"
+				}
+			]
 		}
 	]
 }
