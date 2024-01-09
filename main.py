@@ -51,7 +51,7 @@ class LoginDialog(QDialog):
         if result:
             password = result[0][1]
             globals.PRENOM_UTILISATEUR = result[0][2]
-
+            
             if password == self.ui.password.text():
                 self.accept()
             else:
@@ -104,6 +104,7 @@ app = QApplication(sys.argv)
 login = LoginDialog()
 
 if login.exec_() == QDialog.Accepted:
+        
         mainwindow = MainWindow()
         mainwindow.show()
         sys.exit(app.exec_())
