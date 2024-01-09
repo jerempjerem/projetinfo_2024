@@ -6,10 +6,10 @@ class Database():
         self.user = '342615'
         self.password = 'Projet1nfo!'
         self.host = 'mysql-pierre-jean.alwaysdata.net'
-        self.database = 'pierre-jean_projet2024'
+        self.database = 'pierre-jean_bdd'
         
 
-    def fetch(self, query: str) -> list:
+    def fetch(self, query: str, params: tuple = ()) -> list:
         """
         Fonction permettant de récupérer des données dans une database donnée.
 
@@ -18,7 +18,7 @@ class Database():
         """ 
         if self.connect():
             cursor = self.connection.cursor()
-            cursor.execute(query)
+            cursor.execute(query, params)
             result = cursor.fetchall()
             cursor.close()
             self.connection.close()

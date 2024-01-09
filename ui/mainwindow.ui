@@ -930,7 +930,7 @@ QPushButton {
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="QTableWidget" name="tableWidget">
+                        <widget class="QTableWidget" name="tableplanning">
                          <property name="font">
                           <font>
                            <family>Sans Serif Collection</family>

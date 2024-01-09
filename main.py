@@ -9,6 +9,9 @@ import globals
 from functions import LoginController, MainController
 import locale
 from datetime import datetime
+import tempfile
+import json
+import os
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QWidget
@@ -55,64 +58,64 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         
         self.controller = MainController(self)
+        
+        self.planningcalendar : list[QLabel] = [self.ui.planninglundi, self.ui.planningmardi, self.ui.planningmercredi, self.ui.planningjeudi, self.ui.planningvendredi, self.ui.planningsamedi, self.ui.planningdimanche]
+
 
         loadJsonStyle(self, self.ui, jsonFiles={"styles/style.json"})
         ########################################################################
 
         ########################################################################      
         
-        self.ui.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.ui.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        
         ## Navigations des pages
         self.ui.planningBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(0))
         self.ui.timelineBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(1))
         self.ui.editBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(2))
+        self.ui.decoBtn.clicked.connect(lambda: self.controller.disconnect())
         
-        # Page Planning
-        self.ui.planningNextWeekBtn.clicked.connect(lambda: self.controller.updates_planning_week(self.ui.planningsemaine, globals.planning_week[0], next_week=True))
-        self.ui.planningPrevWeekBtn.clicked.connect(lambda: self.controller.updates_planning_week(self.ui.planningsemaine, globals.planning_week[0], previous_week=True))
+        ## Page Planning
+        self.ui.tableplanning.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.ui.tableplanning.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.ui.tableplanning.setSelectionMode(QTableWidget.NoSelection)# Désactiver la sélection des cellules
+        self.ui.tableplanning.setEditTriggers(QTableWidget.NoEditTriggers) # Désactiver l'édition des cellules
+        self.ui.tableplanning.setFocusPolicy(Qt.NoFocus)  # Desactive les effets sur les cellules lors d'un clic
+        
+        self.ui.planningNextWeekBtn.clicked.connect(lambda: self.controller.update_calendar(self.ui.planningsemaine, globals.PLANNING_TABS['Planning'][0], self.planningcalendar, self.ui.tableplanning, 'Planning', next_week=True))
+        self.ui.planningPrevWeekBtn.clicked.connect(lambda: self.controller.update_calendar(self.ui.planningsemaine, globals.PLANNING_TABS['Planning'][0], self.planningcalendar, self.ui.tableplanning, 'Planning', previous_week=True))
         # self.ui.planningPickerWeekBtn.clicked.connect()
-        
-        
         
         ## Initialisation des valeurs par default
         self.ui.name.setText(globals.PRENOM_UTILISATEUR)
         
         current_date = datetime.now().strftime("%d/%m/%Y")
-        self.controller.updates_planning_week(self.ui.planningsemaine, current_date)
-        
-        # Création de l'item personnalisé
-        custom_widget = self.controller._test()
-
-        # Création de l'item de tableau personnalisé
-        item = QTableWidgetItem()
-        # item.setBackground(QColor("red"))
-
-        # Définition du widget comme élément de la cellule
-        self.ui.tableWidget.setSpan(1, 1, 5, 1)
-        self.ui.tableWidget.setCellWidget(1, 1, custom_widget)
-        self.ui.tableWidget.setItem(1, 1, item)
-        
+        self.controller.update_calendar(self.ui.planningsemaine, current_date, self.planningcalendar, self.ui.tableplanning, 'Planning')        
 
 ########################################################################
 ## EXECUTE APP
 ########################################################################
 app = QApplication(sys.argv)
-login = LoginDialog()
-
-# if login.exec_() == QDialog.Accepted:
-        
-#         mainwindow = MainWindow()
-#         mainwindow.show()
-#         sys.exit(app.exec_())
 
 
-globals.PRENOM_UTILISATEUR = "Jérémie"
+# Vérifier si le fichier temporaire existe
+if os.path.exists(globals.PATH_TEMP_FILE):
+    with open(globals.PATH_TEMP_FILE, 'r') as existing_file:
+        content = json.load(existing_file)
+        globals.PRENOM_UTILISATEUR = content['Prenom']  # Utilisez get pour éviter une KeyError
+        globals.USERNAME_UTILISATEUR = content['Username']  # Utilisez get pour éviter une KeyError
+
+else:
+    login = LoginDialog()
+    if login.exec_() == QDialog.Accepted:
+
+        data = {"Prenom": globals.PRENOM_UTILISATEUR, "Username": globals.USERNAME_UTILISATEUR}
+        with open(globals.PATH_TEMP_FILE, 'w') as new_file:
+            json.dump(data, new_file, indent=2)
+
+# Lancer l'application
 mainwindow = MainWindow()
 mainwindow.show()
-
 sys.exit(app.exec_())
+
 
 ########################################################################
 ## END===>
