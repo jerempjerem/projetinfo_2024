@@ -6,13 +6,12 @@
 
 import sys
 import globals
-import functions
+from functions import LoginController, MainController
 import locale
 from datetime import datetime
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QWidget
-from database import Database
 ########################################################################
 # IMPORT GUI FILE
 from ui_logindialog import *
@@ -27,8 +26,6 @@ from Custom_Widgets import *
 # Configurer la locale en français
 locale.setlocale(locale.LC_TIME, 'fr_FR')
 
-db = Database()
-
 ########################################################################
 ## LOGIN WINDOW CLASS
 ########################################################################
@@ -37,38 +34,15 @@ class LoginDialog(QDialog):
         QDialog.__init__(self)
         self.ui = Ui_LoginDialog()
         self.ui.setupUi(self)
+        
+        self.controller = LoginController(self)
 
         loadJsonStyle(self, self.ui, jsonFiles={"styles/style.json"})
         ########################################################################
 
         ########################################################################       
-        self.ui.loginbtn.clicked.connect(self.login)
-        self.ui.closebtn.clicked.connect(self.exit)
-        
-    def exit(self):
-        sys.exit(app.exec_())
-        
-    def login(self):
-       
-        query = f"SELECT Username, Mdp, Prenom FROM EMPLOYES WHERE Username='{self.ui.username.text()}'"
-        result = db.fetch(query)
-        
-        if result:
-            password = result[0][1]
-            globals.PRENOM_UTILISATEUR = result[0][2]
-            
-            if password == self.ui.password.text():
-                self.accept()
-            else:
-                self.ui.password.clear()
-                self.ui.error_password.setText("Mot de passe invalide")
-        else:
-            self.clear_username_password()
-            self.ui.error_password.setText("Nom d'utilisateur invalide")
-                
-    def clear_username_password(self):
-        self.ui.username.clear()
-        self.ui.password.clear()
+        self.ui.loginbtn.clicked.connect(lambda: self.controller.login())
+        self.ui.closebtn.clicked.connect(lambda: sys.exit(app.exec_()))
         
         
 ########################################################################
@@ -79,6 +53,8 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        self.controller = MainController(self)
 
         loadJsonStyle(self, self.ui, jsonFiles={"styles/style.json"})
         ########################################################################
@@ -89,13 +65,13 @@ class MainWindow(QMainWindow):
         self.ui.tableWidget.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
         
         ## Navigations des pages
-        self.ui.planningBtn.clicked.connect(self._go_to_planning_page)
-        self.ui.timelineBtn.clicked.connect(self._go_to_timeline_page)
-        self.ui.editBtn.clicked.connect(self._go_to_edit_page)
+        self.ui.planningBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(0))
+        self.ui.timelineBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(1))
+        self.ui.editBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(2))
         
         # Page Planning
-        self.ui.planningNextWeekBtn.clicked.connect(lambda: self._updates_planning_week(self.ui.planningsemaine, functions.planning_week[0], next_week=True))
-        self.ui.planningPrevWeekBtn.clicked.connect(lambda: self._updates_planning_week(self.ui.planningsemaine, functions.planning_week[0], previous_week=True))
+        self.ui.planningNextWeekBtn.clicked.connect(lambda: self.controller.updates_planning_week(self.ui.planningsemaine, globals.planning_week[0], next_week=True))
+        self.ui.planningPrevWeekBtn.clicked.connect(lambda: self.controller.updates_planning_week(self.ui.planningsemaine, globals.planning_week[0], previous_week=True))
         # self.ui.planningPickerWeekBtn.clicked.connect()
         
         
@@ -104,26 +80,20 @@ class MainWindow(QMainWindow):
         self.ui.name.setText(globals.PRENOM_UTILISATEUR)
         
         current_date = datetime.now().strftime("%d/%m/%Y")
-        self._updates_planning_week(self.ui.planningsemaine, current_date)
-    
-    
-    def _updates_planning_week(self, plage_label: QLabel, date: str, previous_week : bool = False, next_week : bool = False):
+        self.controller.updates_planning_week(self.ui.planningsemaine, current_date)
         
-        functions.planning_week = functions.get_weekdates(date, previous_week=previous_week, next_week=next_week)
-        planning_plage = functions.get_plage_dates(functions.planning_week)
-        plage_label.setText(planning_plage)
-    
-    def _go_to_planning_page(self):
-        self.ui.stackedplanning.setCurrentIndex(0)
+        # Création de l'item personnalisé
+        custom_widget = self.controller._test()
 
-    def _go_to_timeline_page(self):
-        self.ui.stackedplanning.setCurrentIndex(1) 
-    
-    def _go_to_edit_page(self):
-        self.ui.stackedplanning.setCurrentIndex(2) 
+        # Création de l'item de tableau personnalisé
+        item = QTableWidgetItem()
+        # item.setBackground(QColor("red"))
 
+        # Définition du widget comme élément de la cellule
+        self.ui.tableWidget.setSpan(1, 1, 5, 1)
+        self.ui.tableWidget.setCellWidget(1, 1, custom_widget)
+        self.ui.tableWidget.setItem(1, 1, item)
         
-
 
 ########################################################################
 ## EXECUTE APP
@@ -131,18 +101,18 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 login = LoginDialog()
 
-if login.exec_() == QDialog.Accepted:
+# if login.exec_() == QDialog.Accepted:
         
-        mainwindow = MainWindow()
-        mainwindow.show()
-        sys.exit(app.exec_())
+#         mainwindow = MainWindow()
+#         mainwindow.show()
+#         sys.exit(app.exec_())
 
 
 globals.PRENOM_UTILISATEUR = "Jérémie"
 mainwindow = MainWindow()
 mainwindow.show()
 
-# sys.exit(app.exec_())
+sys.exit(app.exec_())
 
 ########################################################################
 ## END===>

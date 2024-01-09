@@ -663,7 +663,7 @@ QPushButton {
                         <number>0</number>
                        </property>
                        <property name="leftMargin">
-                        <number>0</number>
+                        <number>20</number>
                        </property>
                        <property name="topMargin">
                         <number>0</number>
@@ -685,7 +685,7 @@ QPushButton {
                           </font>
                          </property>
                          <property name="text">
-                          <string>Lun 12</string>
+                          <string/>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -703,7 +703,7 @@ QPushButton {
                           </font>
                          </property>
                          <property name="text">
-                          <string>Mar 13</string>
+                          <string/>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -721,7 +721,7 @@ QPushButton {
                           </font>
                          </property>
                          <property name="text">
-                          <string>Mer 14</string>
+                          <string/>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -739,7 +739,7 @@ QPushButton {
                           </font>
                          </property>
                          <property name="text">
-                          <string>Jeu 15</string>
+                          <string/>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -757,7 +757,7 @@ QPushButton {
                           </font>
                          </property>
                          <property name="text">
-                          <string>Ven 16</string>
+                          <string/>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -775,7 +775,7 @@ QPushButton {
                           </font>
                          </property>
                          <property name="text">
-                          <string>Sam 17</string>
+                          <string/>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
@@ -793,7 +793,7 @@ QPushButton {
                           </font>
                          </property>
                          <property name="text">
-                          <string>Dim 18</string>
+                          <string/>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignCenter</set>
