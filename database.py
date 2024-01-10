@@ -6,7 +6,7 @@ class Database():
         self.user = '342615'
         self.password = 'Projet1nfo!'
         self.host = 'mysql-pierre-jean.alwaysdata.net'
-        self.database = 'pierre-jean_bdd'
+        self.database = 'pierre-jean_info'
         
 
     def fetch(self, query: str, params: tuple = ()) -> list:

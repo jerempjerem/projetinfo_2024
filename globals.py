@@ -10,6 +10,13 @@ PATH_TEMP_FILE = os.path.join(tempfile.gettempdir(), f"{TEMPFILE_NAME}.json")
 
 PRENOM_UTILISATEUR = ""
 USERNAME_UTILISATEUR = ""
+EQUIPES_UTILISATEUR = {}
+
+EVENT_LIEUX = []
+EVENT_TYPES_AND_COLORS = dict
+EQUIPES = []
+PERSONNES = ()
+
 
 PLANNING_TABS = {
     'Planning': [],
@@ -27,8 +34,8 @@ JOURS_NUMEROTES = {
 }
 
 HEURES_NUMEROTES = {
-    '8': 0,
-    '9': 2,
+    '08': 0,
+    '09': 2,
     '10': 4,
     '11': 6,
     '12': 8,
