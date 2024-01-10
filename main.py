@@ -84,23 +84,24 @@ class MainWindow(QMainWindow):
         self.ui.editNextWeekBtn.clicked.connect(lambda: self.controller.update_calendar(self.ui.editsemaine, self.editcalendar, self.ui.tableedit, 'Editer', next_week=True))
         self.ui.editPrevWeekBtn.clicked.connect(lambda: self.controller.update_calendar(self.ui.editsemaine, self.editcalendar, self.ui.tableedit, 'Editer', previous_week=True))
         # self.ui.editPickerWeekBtn.clicked.connect()
-        self.ui.editAddEventBtn.clicked.connect(lambda: self.controller.displaypopup())
+        self.ui.editAddEventBtn.clicked.connect(lambda: self.controller.displaypopup(iseditable=True))
         
         
         self.ui.editpersonpicker.currentIndexChanged.connect(lambda: self.controller.update_calendar(self.ui.editsemaine, self.editcalendar, self.ui.tableedit, 'Editer'))
         
         ## Popup event
-        self.ui.closepopupBtn.clicked.connect(lambda : self.ui.popupContainer.collapseMenu())
+        self.ui.closepopupBtn.clicked.connect(lambda: self.ui.popupContainer.collapseMenu())
+        self.ui.popupsaveBtn.clicked.connect(lambda: self.controller.save_edit_event())
+        
         self.ui.popupdatedebut.setCalendarPopup(True)
         self.ui.popupdatedebut.setDateTime(QDateTime.currentDateTime())
         self.ui.popupdatefin.setCalendarPopup(True)
         self.ui.popupdatefin.setDateTime(QDateTime.currentDateTime())
         
         # self.ui.popuplieux.setEditable(True) # Permet d'ecrire et non pas seulement selectionner dans la liste si a True
-        
+
         ## Initialisation des valeurs par default
         self.ui.name.setText(globals.PRENOM_UTILISATEUR)
-
                 
         current_date = datetime.now().strftime("%d/%m/%Y")
         self.controller.update_calendar(self.ui.planningsemaine, self.planningcalendar, self.ui.tableplanning, 'Planning', option_date=current_date)  
@@ -130,10 +131,9 @@ if __name__ == "__main__":
 
     globals.EVENT_LIEUX = [element[0] for element in globals.db.fetch('SELECT LIEU.Nom FROM LIEU')]
     globals.EQUIPES = [element[0] for element in globals.db.fetch('SELECT EQUIPE.Nom FROM EQUIPE')]
-    globals.EVENT_TYPES_AND_COLORS = {cle: valeur for cle, valeur in globals.db.fetch('SELECT TYPE.Nom, TYPE.Couleur FROM TYPE')}
-    globals.PERSONNES = globals.db.fetch('SELECT EMPLOYES.Username, EMPLOYES.Nom FROM EMPLOYES')
+    globals.EVENT_TYPES_AND_COLORS = {types: colors for types, colors in globals.db.fetch('SELECT TYPE.Nom, TYPE.Couleur FROM TYPE')}
+    globals.PERSONNES = [element[0] for element in globals.db.fetch('SELECT EMPLOYES.Username, EMPLOYES.Nom FROM EMPLOYES')]
     print(globals.PERSONNES)
-    
     
     app = QApplication(sys.argv)
 

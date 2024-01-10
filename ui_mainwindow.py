@@ -450,6 +450,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.setContentsMargins(0, -1, -1, -1)
         self.planningnbheures = QLabel(self.frame_8)
         self.planningnbheures.setObjectName(u"planningnbheures")
+        self.planningnbheures.setMinimumSize(QSize(380, 0))
         self.planningnbheures.setFont(font)
         self.planningnbheures.setStyleSheet(u"padding: 0 30px;")
         self.planningnbheures.setAlignment(Qt.AlignCenter)
@@ -753,7 +754,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_11 = QHBoxLayout(self.widget_7)
         self.horizontalLayout_11.setSpacing(20)
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
-        self.horizontalLayout_11.setContentsMargins(-1, 0, -1, -1)
+        self.horizontalLayout_11.setContentsMargins(0, 0, -1, -1)
         self.frame_11 = QFrame(self.widget_7)
         self.frame_11.setObjectName(u"frame_11")
         sizePolicy1.setHeightForWidth(self.frame_11.sizePolicy().hasHeightForWidth())
@@ -782,10 +783,12 @@ class Ui_MainWindow(object):
         font6.setBold(True)
         font6.setWeight(75)
         self.editeteampicker.setFont(font6)
+        self.editeteampicker.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.horizontalLayout_11.addWidget(self.editeteampicker)
 
         self.editpersonpicker = QComboBox(self.widget_7)
+        self.editpersonpicker.addItem("")
         self.editpersonpicker.setObjectName(u"editpersonpicker")
         sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         sizePolicy3.setHorizontalStretch(0)
@@ -841,6 +844,7 @@ class Ui_MainWindow(object):
 
         self.editAddEventBtn = QPushButton(self.frame_12)
         self.editAddEventBtn.setObjectName(u"editAddEventBtn")
+        self.editAddEventBtn.setCursor(QCursor(Qt.PointingHandCursor))
         icon8 = QIcon()
         icon8.addFile(u":/icons/icons/plus.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.editAddEventBtn.setIcon(icon8)
@@ -1084,6 +1088,9 @@ class Ui_MainWindow(object):
 
         self.widget_14 = QWidget(self.popupContainer)
         self.widget_14.setObjectName(u"widget_14")
+        self.widget_14.setStyleSheet(u"#widget_14 {\n"
+"border-bottom: 2px solid black;\n"
+"}")
         self.gridLayout = QGridLayout(self.widget_14)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setHorizontalSpacing(80)
@@ -1174,13 +1181,6 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.label_7, 0, 0, 1, 1)
 
         self.popupteams = QListWidget(self.widget_15)
-        QListWidgetItem(self.popupteams)
-        QListWidgetItem(self.popupteams)
-        QListWidgetItem(self.popupteams)
-        QListWidgetItem(self.popupteams)
-        QListWidgetItem(self.popupteams)
-        QListWidgetItem(self.popupteams)
-        QListWidgetItem(self.popupteams)
         self.popupteams.setObjectName(u"popupteams")
         self.popupteams.setFont(font5)
         self.popupteams.setFocusPolicy(Qt.NoFocus)
@@ -1190,14 +1190,6 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.popupteams, 1, 0, 1, 1)
 
         self.popuppersons = QListWidget(self.widget_15)
-        QListWidgetItem(self.popuppersons)
-        QListWidgetItem(self.popuppersons)
-        QListWidgetItem(self.popuppersons)
-        QListWidgetItem(self.popuppersons)
-        QListWidgetItem(self.popuppersons)
-        QListWidgetItem(self.popuppersons)
-        QListWidgetItem(self.popuppersons)
-        QListWidgetItem(self.popuppersons)
         self.popuppersons.setObjectName(u"popuppersons")
         self.popuppersons.setFont(font5)
         self.popuppersons.setFocusPolicy(Qt.NoFocus)
@@ -1224,6 +1216,7 @@ class Ui_MainWindow(object):
         self.popupsaveBtn = QPushButton(self.frame_16)
         self.popupsaveBtn.setObjectName(u"popupsaveBtn")
         self.popupsaveBtn.setFont(font6)
+        self.popupsaveBtn.setCursor(QCursor(Qt.PointingHandCursor))
         icon10 = QIcon()
         icon10.addFile(u":/icons/icons/save.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.popupsaveBtn.setIcon(icon10)
@@ -1247,7 +1240,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedplanning.setCurrentIndex(1)
+        self.stackedplanning.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1263,7 +1256,7 @@ class Ui_MainWindow(object):
         self.decoBtn.setText(QCoreApplication.translate("MainWindow", u"  D\u00e9connexion", None))
         self.minimizeBtn.setText("")
         self.closeBtn.setText("")
-        self.planningnbheures.setText(QCoreApplication.translate("MainWindow", u"Nombre d'heures : 30h/34h", None))
+        self.planningnbheures.setText("")
         self.planningsemaine.setText("")
         self.planningPrevWeekBtn.setText("")
         self.planningNextWeekBtn.setText("")
@@ -1279,6 +1272,8 @@ class Ui_MainWindow(object):
         self.label_18.setText(QCoreApplication.translate("MainWindow", u"13h", None))
         self.label_24.setText(QCoreApplication.translate("MainWindow", u"18h", None))
         self.editsemaine.setText("")
+        self.editpersonpicker.setItemText(0, QCoreApplication.translate("MainWindow", u"Louise.Lalin", None))
+
         self.editpersonpicker.setCurrentText("")
         self.editpersonpicker.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Selection employ\u00e9", None))
         self.editPrevWeekBtn.setText("")
@@ -1302,46 +1297,6 @@ class Ui_MainWindow(object):
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Lieux :", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Personnes :", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Equipes :", None))
-
-        __sortingEnabled = self.popupteams.isSortingEnabled()
-        self.popupteams.setSortingEnabled(False)
-        ___qlistwidgetitem = self.popupteams.item(0)
-        ___qlistwidgetitem.setText(QCoreApplication.translate("MainWindow", u"edezdzed", None));
-        ___qlistwidgetitem1 = self.popupteams.item(1)
-        ___qlistwidgetitem1.setText(QCoreApplication.translate("MainWindow", u"edzedze", None));
-        ___qlistwidgetitem2 = self.popupteams.item(2)
-        ___qlistwidgetitem2.setText(QCoreApplication.translate("MainWindow", u"dzedzedezd", None));
-        ___qlistwidgetitem3 = self.popupteams.item(3)
-        ___qlistwidgetitem3.setText(QCoreApplication.translate("MainWindow", u"ezdezde", None));
-        ___qlistwidgetitem4 = self.popupteams.item(4)
-        ___qlistwidgetitem4.setText(QCoreApplication.translate("MainWindow", u"ezdzedzed", None));
-        ___qlistwidgetitem5 = self.popupteams.item(5)
-        ___qlistwidgetitem5.setText(QCoreApplication.translate("MainWindow", u"zedzedezd", None));
-        ___qlistwidgetitem6 = self.popupteams.item(6)
-        ___qlistwidgetitem6.setText(QCoreApplication.translate("MainWindow", u"ezdzed", None));
-        self.popupteams.setSortingEnabled(__sortingEnabled)
-
-
-        __sortingEnabled1 = self.popuppersons.isSortingEnabled()
-        self.popuppersons.setSortingEnabled(False)
-        ___qlistwidgetitem7 = self.popuppersons.item(0)
-        ___qlistwidgetitem7.setText(QCoreApplication.translate("MainWindow", u"ezdezd", None));
-        ___qlistwidgetitem8 = self.popuppersons.item(1)
-        ___qlistwidgetitem8.setText(QCoreApplication.translate("MainWindow", u"ezd", None));
-        ___qlistwidgetitem9 = self.popuppersons.item(2)
-        ___qlistwidgetitem9.setText(QCoreApplication.translate("MainWindow", u"ed", None));
-        ___qlistwidgetitem10 = self.popuppersons.item(3)
-        ___qlistwidgetitem10.setText(QCoreApplication.translate("MainWindow", u"ez", None));
-        ___qlistwidgetitem11 = self.popuppersons.item(4)
-        ___qlistwidgetitem11.setText(QCoreApplication.translate("MainWindow", u"dze", None));
-        ___qlistwidgetitem12 = self.popuppersons.item(5)
-        ___qlistwidgetitem12.setText(QCoreApplication.translate("MainWindow", u"dezdzedzedez", None));
-        ___qlistwidgetitem13 = self.popuppersons.item(6)
-        ___qlistwidgetitem13.setText(QCoreApplication.translate("MainWindow", u"zedzedezded", None));
-        ___qlistwidgetitem14 = self.popuppersons.item(7)
-        ___qlistwidgetitem14.setText(QCoreApplication.translate("MainWindow", u"edzedzedzedezd", None));
-        self.popuppersons.setSortingEnabled(__sortingEnabled1)
-
         self.popupsaveBtn.setText(QCoreApplication.translate("MainWindow", u" Save", None))
     # retranslateUi
 

@@ -570,7 +570,7 @@ QCalendarWidget QWidget {
           <item>
            <widget class="QStackedWidget" name="stackedplanning">
             <property name="currentIndex">
-             <number>2</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="planningPage">
              <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -607,6 +607,12 @@ QCalendarWidget QWidget {
                     </property>
                     <item>
                      <widget class="QLabel" name="planningnbheures">
+                      <property name="minimumSize">
+                       <size>
+                        <width>380</width>
+                        <height>0</height>
+                       </size>
+                      </property>
                       <property name="font">
                        <font>
                         <family>Sans Serif Collection</family>
@@ -619,7 +625,7 @@ QCalendarWidget QWidget {
                        <string notr="true">padding: 0 30px;</string>
                       </property>
                       <property name="text">
-                       <string>Nombre d'heures : 30h/34h</string>
+                       <string/>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignCenter</set>
@@ -1297,6 +1303,9 @@ QListView {
                      <bold>true</bold>
                     </font>
                    </property>
+                   <property name="cursor">
+                    <cursorShape>PointingHandCursor</cursorShape>
+                   </property>
                   </widget>
                  </item>
                  <item>
@@ -1342,6 +1351,11 @@ QListView {
                    <property name="placeholderText">
                     <string>Selection employé</string>
                    </property>
+                   <item>
+                    <property name="text">
+                     <string>Louise.Lalin</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
                  <item alignment="Qt::AlignLeft">
@@ -2003,6 +2017,11 @@ QListView {
           </item>
           <item>
            <widget class="QWidget" name="widget_14" native="true">
+            <property name="styleSheet">
+             <string notr="true">#widget_14 {
+border-bottom: 2px solid black;
+}</string>
+            </property>
             <layout class="QGridLayout" name="gridLayout">
              <property name="horizontalSpacing">
               <number>80</number>
@@ -2208,41 +2227,6 @@ QListView {
                <property name="selectionMode">
                 <enum>QAbstractItemView::MultiSelection</enum>
                </property>
-               <item>
-                <property name="text">
-                 <string>edezdzed</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>edzedze</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>dzedzedezd</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>ezdezde</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>ezdzedzed</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>zedzedezd</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>ezdzed</string>
-                </property>
-               </item>
               </widget>
              </item>
              <item row="1" column="1">
@@ -2261,46 +2245,6 @@ QListView {
                <property name="selectionMode">
                 <enum>QAbstractItemView::MultiSelection</enum>
                </property>
-               <item>
-                <property name="text">
-                 <string>ezdezd</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>ezd</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>ed</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>ez</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>dze</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>dezdzedzedez</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>zedzedezded</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>edzedzedzedezd</string>
-                </property>
-               </item>
               </widget>
              </item>
             </layout>
@@ -2351,6 +2295,9 @@ QListView {
                     <weight>75</weight>
                     <bold>true</bold>
                    </font>
+                  </property>
+                  <property name="cursor">
+                   <cursorShape>PointingHandCursor</cursorShape>
                   </property>
                   <property name="text">
                    <string> Save</string>

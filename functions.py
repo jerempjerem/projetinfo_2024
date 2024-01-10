@@ -12,9 +12,10 @@ def read_user():
         content = json.load(existing_file)
         globals.PRENOM_UTILISATEUR = content['Prenom'] 
         globals.USERNAME_UTILISATEUR = content['Username']
+        globals.NOMBRE_HEURES_UTILISATEUR = content['NbHeure']
 
 def save_user():
-    data = {"Prenom": globals.PRENOM_UTILISATEUR, "Username": globals.USERNAME_UTILISATEUR}
+    data = {"Prenom": globals.PRENOM_UTILISATEUR, "Username": globals.USERNAME_UTILISATEUR, "NbHeure": globals.NOMBRE_HEURES_UTILISATEUR}
     with open(globals.PATH_TEMP_FILE, 'w') as new_file:
         json.dump(data, new_file, indent=2)
 
@@ -55,29 +56,68 @@ class MainController():
         plage_label.setText(planning_plage)
         
         # Changement des evenements
+        total_heures_semaine = 0
         for event in self._get_all_event_user(globals.PLANNING_TABS[tab], user_selected):
             duration = self._get_event_duration(event['StartTime'], event['EndTime'])
             hours = f"{event['StartTime'].strftime('%H:%M')} - {event['EndTime'].strftime('%H:%M')}"
             colonne, ligne = self._get_event_position(event['StartTime'])
             
             self._add_event(table, colonne, ligne, duration, hours, event, iseditable)
+            total_heures_semaine += round(duration/2, 1)
+        
+        if tab == 'Planning':
+            self.parent.ui.planningnbheures.setText(f"Nombre d'heures : {total_heures_semaine}/{globals.NOMBRE_HEURES_UTILISATEUR}")
+            if total_heures_semaine <= globals.NOMBRE_HEURES_UTILISATEUR:
+                self.parent.ui.planningnbheures.setStyleSheet('color: green')
+            else:
+                self.parent.ui.planningnbheures.setStyleSheet('color: red')
             
     def displaypopup(self, event: dict = None, iseditable : bool = False):
         self.parent.ui.popupteams.clearSelection()
         self.parent.ui.popuppersons.clearSelection()
         self.parent.ui.popuplieux.clear()
+        
+        if event:
+            personnes, equipes = self._equipe_et_personnes_event(event['Id'])
 
-        if event and iseditable:
-            self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], element_distinct_list([event['Place']] + globals.EVENT_LIEUX))
-            self._set_popup_to_writeonly()
-        elif event and not iseditable:
-            self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], [event['Place']])
-            self._set_popup_to_readonly()
+            if iseditable:
+                self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], element_distinct_list([event['Place']] + globals.EVENT_LIEUX),
+                                 element_distinct_list(equipes + globals.EQUIPES), element_distinct_list(personnes + globals.PERSONNES))
+                self._set_popup_to_writeonly()
+            else:
+                self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], [event['Place']], equipes, personnes)
+                self._set_popup_to_readonly()
         else:
             self._edit_popup("Nom de l'event", datetime.now(), datetime.now(), globals.EVENT_LIEUX, globals.EQUIPES, globals.PERSONNES)
 
             
-        self.parent.ui.popupContainer.expandMenu()        
+        self.parent.ui.popupContainer.expandMenu()    
+        
+    def save_edit_event(self):
+        event_name = self.parent.ui.popupeventname.text()
+        date_debut = self.parent.ui.popupdatedebut.dateTime().toPython()
+        date_fin = self.parent.ui.popupdatefin.dateTime().toPython()
+        lieu = self.parent.ui.popuplieux.currentText()
+        equipes = [item.text() for item in self.parent.ui.popupteams.selectedItems()]
+        personnes = [item.text() for item in self.parent.ui.popuppersons.selectedItems()]
+        
+        print(event_name)
+        print(date_debut, type(date_debut))
+        print(date_fin, type(date_fin))
+        print(lieu)
+        print(equipes)
+        print(personnes)
+
+        if lieu not in globals.EVENT_LIEUX:
+            # Ajouter dans la BDD
+            globals.EVENT_LIEUX.append(lieu)
+            
+        if not globals.CURRENT_EVENT_ID_EDITED:
+            # Nouvel event on l'ajoute a la BDD
+            return
+        else :
+            # Event existant on le modifie dans la BDD
+            return
               
     def _get_event_position(self, startTime: datetime) -> (int, int):
         jour = startTime.strftime("%A")
@@ -171,7 +211,6 @@ class MainController():
         return f"{start_date} - {end_date}"
     
     def _create_event_item(self, hours: str, duration: int, event: dict, isEditable: bool = False):
-        
         # Fonts
         font = QFont()
         font.setFamily(u"Sans Serif Collection")
@@ -183,11 +222,10 @@ class MainController():
         font2.setFamily(u"Sans Serif Collection")
         font2.setPointSize(8)
 
-        
         # Widget contenant les infos
         widget = QWidget()
         widget.setStyleSheet(u"QWidget{\n"
-        "	background-color: rgb(214, 240, 255);\n"
+        f"	background-color: {globals.EVENT_TYPES_AND_COLORS[event['EventType']]};\n"
         "	border-top-left-radius: 10px;\n"
         "	border-top-right-radius: 10px;\n"
         "	border-bottom-left-radius: 10px;\n"
@@ -336,24 +374,53 @@ class MainController():
         self.parent.ui.popupteams.setSelectionMode(QListWidget.NoSelection)
         self.parent.ui.popuppersons.setSelectionMode(QListWidget.NoSelection)
         
-    def _edit_popup(self, event_name: str, date_debut: datetime, date_fin: datetime, lieux: list, equipes: list = [], personnes: list = []):
+        
+    def _equipe_et_personnes_event(self, eventID: int) -> (list, list):
+        query = """
+            SELECT EMPLOYES.Username, EQUIPE.Nom 
+            FROM EMPLOYES 
+            INNER JOIN PARTICIPANT_G ON EMPLOYES.EmployesID = PARTICIPANT_G.EmployesID_ext2 
+            INNER JOIN EQUIPE ON PARTICIPANT_G.EquipeID_ext = EQUIPE.EquipeID 
+            INNER JOIN PARTICIPANT_E ON EQUIPE.EquipeID = PARTICIPANT_E.EquipeID_ext2 
+            INNER JOIN EVENEMENT ON PARTICIPANT_E.EvenementID_ext2 = EVENEMENT.EvenementID 
+            WHERE EVENEMENT.EvenementID = %s 
+            
+            UNION 
+            
+            SELECT EMPLOYES.Username, NULL 
+            FROM EMPLOYES 
+            INNER JOIN PARTICIPANT_P ON EMPLOYES.EmployesID = PARTICIPANT_P.EmployesID_ext 
+            INNER JOIN EVENEMENT ON PARTICIPANT_P.EvenementID_ext = EVENEMENT.EvenementID 
+            WHERE EVENEMENT.EvenementID = %s; 
+        """
+        
+        resultats = globals.db.fetch(query, (eventID, eventID))
+        
+        personnes = element_distinct_list([element[0] for element in resultats])
+        equipes = element_distinct_list([element[1] for element in resultats if element[1] is not None])
+        return personnes, equipes
+        
+    def _edit_popup(self, event_name: str, date_debut: datetime, date_fin: datetime, lieux: list, equipes: list, personnes: list):
         self.parent.ui.popupeventname.setText(event_name)
         self.parent.ui.popupdatedebut.setDateTime(date_debut)
         self.parent.ui.popupdatefin.setDateTime(date_fin)
         self.parent.ui.popuplieux.addItems(lieux)
+        self.parent.ui.popupteams.addItems(equipes)
+        self.parent.ui.popuppersons.addItems(personnes)
         
 class LoginController():
     def __init__(self, parent : QDialog) -> None:
         self.parent = parent
         
     def login(self):
-            query = f"SELECT UserName, Mdp, Prenom FROM EMPLOYES WHERE Username='{self.parent.ui.username.text()}'"
+            query = f"SELECT UserName, Mdp, Prenom, NbHeure FROM EMPLOYES WHERE Username='{self.parent.ui.username.text()}'"
             result = globals.db.fetch(query)
-            
+            print(result)
             if result:
                 password = result[0][1]
                 globals.PRENOM_UTILISATEUR = result[0][2]
                 globals.USERNAME_UTILISATEUR = result[0][0]
+                globals.NOMBRE_HEURES_UTILISATEUR = float(result[0][3])
                 
                 if password == self.parent.ui.password.text():
                     self.parent.accept()
