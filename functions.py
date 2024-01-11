@@ -1,5 +1,5 @@
-from datetime import datetime , timedelta
 # from main import MainWindow, LoginDialog
+from datetime import datetime , timedelta
 import os
 import sys
 import globals
@@ -8,8 +8,12 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 import json
 import hashlib
+import random
 
 def read_user():
+    """
+    Permet de lire le fichier json de la session sauvegardé et de les affectés
+    """
     with open(globals.PATH_TEMP_FILE, 'r') as existing_file:
         content = json.load(existing_file)
         globals.PRENOM_UTILISATEUR = content['Prenom'] 
@@ -17,11 +21,23 @@ def read_user():
         globals.NOMBRE_HEURES_UTILISATEUR = content['NbHeure']
 
 def save_user():
-    data = {"Prenom": globals.PRENOM_UTILISATEUR, "Username": globals.USERNAME_UTILISATEUR, "NbHeure": globals.NOMBRE_HEURES_UTILISATEUR}
+    """
+    Permet de sauvegardé la session d'un utilisateur dans les fichiers temporaire de l'ordi
+    """
+    
+    data = {
+        "Prenom": globals.PRENOM_UTILISATEUR, 
+        "Username": globals.USERNAME_UTILISATEUR, 
+        "NbHeure": globals.NOMBRE_HEURES_UTILISATEUR
+    }
+    
     with open(globals.PATH_TEMP_FILE, 'w') as new_file:
         json.dump(data, new_file, indent=2)
 
 def get_teams_managed_user():
+    """
+    Permet de recuperer et d'assigné les equipes et les personnes managé par l'utilisateur authentifié
+    """
 
     query = """
         SELECT EQUIPE.Nom
@@ -32,7 +48,7 @@ def get_teams_managed_user():
         WHERE EMPLOYES.Username = %s AND ROLE.RoleID = 0;
     """
     result = [element[0] for element in globals.db.fetch(query, (globals.USERNAME_UTILISATEUR,))]
-    globals.EQUIPES_UTILISATEUR = {equipe: None for equipe in result}
+    globals.EQUIPES_GEREES_UTILISATEUR = {equipe: None for equipe in result}
     
     personne_geree_user = []
     for equipe in result:
@@ -49,19 +65,41 @@ def get_teams_managed_user():
         result = [element[0] for element in globals.db.fetch(query, (equipe,))]
         
         personne_geree_user += result
-        globals.EQUIPES_UTILISATEUR[equipe] = result
+        globals.EQUIPES_GEREES_UTILISATEUR[equipe] = result
     
     globals.PERSONNE_GEREE_USER = element_distinct_list(personne_geree_user)
 
 def element_distinct_list(liste: list) -> list:
+    """
+    Permet de supprimer tous les doublons d'une liste
+
+    Args:
+        liste (list): liste a nettoyé
+
+    Returns:
+        list: la liste supprimé de tous les doublons
+    """
     return list(set(liste))
 
-def hasher_mot_de_passe(mot_de_passe):
+def hasher_mot_de_passe(mot_de_passe: str) -> str:
+    """
+    Permet de hasher un mdp grace a l'algorithme SHA-256 (Secure Hash Algorithm 256 bits)
+
+    Args:
+        mot_de_passe (str): mdp a hashé
+
+    Returns:
+        str: le mdp hashé
+    """
     hasher = hashlib.sha256()
     hasher.update(mot_de_passe.encode('utf-8'))
     hash_resultat = hasher.hexdigest()
     return hash_resultat
 
+
+###########################################################################################
+## CLASS QUI REGROUPE TOUTES LES FONCTIONS QUI SERVENT A CONTROLLER LA FENETRE PRINCIPALES
+###########################################################################################
 class MainController():
     def __init__(self, parent) -> None:
         self.parent = parent
@@ -123,7 +161,7 @@ class MainController():
 
             if iseditable:
                 self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], element_distinct_list([event['Place']] + globals.EVENT_LIEUX),
-                                 element_distinct_list(equipes + globals.EQUIPES), element_distinct_list(personnes + globals.PERSONNES),
+                                 element_distinct_list(equipes + list(globals.EQUIPES_DB.keys())), element_distinct_list(personnes + globals.PERSONNES),
                                  element_distinct_list([event['EventType']] + list(globals.EVENT_TYPES_AND_COLORS.keys())))
                 self._set_popup_to_writeonly()
             else:
@@ -182,7 +220,7 @@ class MainController():
 
     def change_persons(self):
         self.parent.ui.editpersonpicker.clear()
-        self.parent.ui.editpersonpicker.addItems(globals.EQUIPES_UTILISATEUR[self.parent.ui.editeteampicker.currentText()])
+        self.parent.ui.editpersonpicker.addItems(globals.EQUIPES_GEREES_UTILISATEUR[self.parent.ui.editeteampicker.currentText()])
     
     def close_popup(self):
         self.parent.ui.popupContainer.collapseMenu()
@@ -619,7 +657,7 @@ class MainController():
             if intersection_personne == set(personne_equipe):
                 equipes_libre.append(equipe)
                 
-        return list(set(equipes_libre) & set(globals.EQUIPES_UTILISATEUR))
+        return list(set(equipes_libre) & set(globals.EQUIPES_GEREES_UTILISATEUR))
     
     def _lieu_equipe_personne_dispo(self, date_debut : datetime, date_fin : datetime) -> (list, list, list):
         lieux_dispo = self._lieux_disponible(date_debut, date_fin)  
@@ -627,28 +665,34 @@ class MainController():
         equipes_dispo = self._equipe_libre(personne_dispo)
         return lieux_dispo, personne_dispo, equipes_dispo
     
-    
+
+###########################################################################################
+## CLASS QUI REGROUPE TOUTES LES FONCTIONS QUI SERVENT A CONTROLLER LA FENETRE DE LOGIN
+###########################################################################################
 class LoginController():
     def __init__(self, parent) -> None:
         self.parent = parent
         
     def login(self):
-            query = f"SELECT UserName, Mdp, Prenom, NbHeure FROM EMPLOYES WHERE Username='{self.parent.ui.username.text()}'"
-            result = globals.db.fetch(query)
+        """
+        Permet de verifié si l'identifiant et le mdp entré par l'utilisateur existe et sont correctes
+        """
+        query = f"SELECT UserName, Mdp, Prenom, NbHeure FROM EMPLOYES WHERE Username='{self.parent.ui.username.text()}'"
+        result = [element[0] for element in globals.db.fetch(query)]
 
-            if result:
-                hashed_password = result[0][1]
-                globals.PRENOM_UTILISATEUR = result[0][2]
-                globals.USERNAME_UTILISATEUR = result[0][0]
-                globals.NOMBRE_HEURES_UTILISATEUR = float(result[0][3])
-                
-                if hashed_password == hasher_mot_de_passe(self.parent.ui.password.text()):
-                    self.parent.accept()
-                else:
-                    self.parent.ui.password.clear()
-                    self.parent.ui.error_password.setText("Mot de passe invalide")
+        if result:
+            hashed_password = result[1]
+            globals.PRENOM_UTILISATEUR = result[2]
+            globals.USERNAME_UTILISATEUR = result[0]
+            globals.NOMBRE_HEURES_UTILISATEUR = float(result[3])
+            
+            if hashed_password == hasher_mot_de_passe(self.parent.ui.password.text()):
+                self.parent.accept() # Permet de quitter la fenetre de dialogue 
             else:
-                self.parent.ui.username.clear()
                 self.parent.ui.password.clear()
-                self.parent.ui.error_password.setText("Nom d'utilisateur invalide")
+                self.parent.ui.error_password.setText("Mot de passe invalide")
+        else:
+            self.parent.ui.username.clear()
+            self.parent.ui.password.clear()
+            self.parent.ui.error_password.setText("Nom d'utilisateur invalide")
                 
