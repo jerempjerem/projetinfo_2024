@@ -1,5 +1,11 @@
 import mysql.connector
 
+"""
+        Fonction permettant de récupérer des données dans une database donnée.
+
+        :param query: requête SQL que l'on veut exécuter
+        :return: renvoie les données récupérées grâce à cette requête
+        """ 
 
 class Database():
 
@@ -9,13 +15,17 @@ class Database():
         self.host = 'mysql-pierre-jean.alwaysdata.net'
         self.database = 'pierre-jean_info'
         
-    def fetch(self, query: str, params: tuple = ()) -> list:
+    def fetch(self, query: str, params: tuple = ()) -> list[tuple]: # TODO: verifier que la requete s'est bien executé
         """
-        Fonction permettant de récupérer des données dans une database donnée.
+        Permet de récupérer de selectionné des données dans la bdd
 
-        :param query: requête SQL que l'on veut exécuter
-        :return: renvoie les données récupérées grâce à cette requête
-        """ 
+        Args:
+            query (str): equête SQL que l'on veut exécuter
+            params (tuple, optional): Parametres de la requete. Defaults to ().
+
+        Returns:
+            list[tuple]: Données récupérées grâce à la query
+        """
         if self.connect():
             cursor = self.connection.cursor()
             cursor.execute(query, params)
@@ -26,13 +36,14 @@ class Database():
         
         return []
         
-    def edit(self, query: str, variables: tuple = ()):
+    def edit(self, query: str, variables: tuple = ()): # TODO: verifier que la requete s'est bien executé
         """
-        Fonction permettant de modifier une database donnée (INSERT, DELETE, CHANGE).
+        Permet de modfié des données dans la bdd ou d'en inseré
 
-        :param query: requête SQL que l'on veut exécuter
-        :param variables: variables de la requete
-        """ 
+        Args:
+            query (str): equête SQL que l'on veut exécuter
+            params (tuple, optional): Parametres de la requete. Defaults to ().
+        """
         if self.connect():
             cursor = self.connection.cursor()
             cursor.execute(query, variables)
@@ -42,10 +53,11 @@ class Database():
 
     def connect(self) -> bool:
         """
-        Fonction permettant de se connecter à la database donnée.
-
-        :return: renvoie un booléen True si nous sommes connecté, False sinon
-        """ 
+        Permet de se connecter à la BDD
+        
+        Returns:
+            bool: Indique si la connexion a réussi ouu echoué
+        """
 
         try:
             self.connection = mysql.connector.connect(user=self.user, password=self.password, host=self.host, database=self.database)
