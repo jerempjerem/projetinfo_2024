@@ -24,21 +24,20 @@ TEMPFILE_NAME = "planning_session"
 PATH_TEMP_FILE = os.path.join(tempfile.gettempdir(), f"{TEMPFILE_NAME}.json")
 
 
-PRENOM_UTILISATEUR = ""
-USERNAME_UTILISATEUR = ""
-NOMBRE_HEURES_UTILISATEUR = 0
-EQUIPES_UTILISATEUR = {}
-PERSONNE_GEREE_USER = []
+PRENOM_UTILISATEUR : str = "" # Prénom de l'utilisateur authentifié
+USERNAME_UTILISATEUR : str = "" # Nom d'utilisateur de l'utilisateur authentifié
+NOMBRE_HEURES_UTILISATEUR : float = 0 # Nombre d'heure du contrat de l'utilisateur authentifié
+EQUIPES_GEREES_UTILISATEUR : dict[list] = {} # Dictionnaire de toutes les équipes gerées par l'utilsateur et la liste des personnes de l'equipe associé
+PERSONNE_GEREE_USER : list = [] # Liste des personnes gerées par l'utilisateur authentifié
 
-EVENT_LIEUX = []
-EVENT_TYPES_AND_COLORS = {}
-EQUIPES = []
-PERSONNES = ()
-EQUIPES_DB = {}
+EVENT_LIEUX : list = [] # Liste de tous les lieux existant dans la bdd
+EVENT_TYPES_AND_COLORS : dict = {} # Dictionnaire de tous les types d'evenement et leurs couleur associé
+PERSONNES : list = [] # Liste de toutes les personnes existantes dans la bdd
+EQUIPES_DB : dict = {} # Dictionnaire de toutes les équipes existantes dans la bdd et la liste des personnes de l'équipe associé
 
-CURRENT_EDITED_EVENT_ID = None
+CURRENT_EDITED_EVENT_ID = None # Variable qui nous permets de recuperer l'id de l'evenement qui est en train d'etre modifié
 
-EVENT_KEYS = ["Id", "Nom", "Place", "StartTime", "EndTime", "EventType"]
+EVENT_KEYS = ["Id", "Nom", "Place", "StartTime", "EndTime", "EventType"] # Constante des clés qui compose le dictionnaires qui defini un evenement
 
 ROLES_ID = {
     "collaborateur": 1,

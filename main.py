@@ -89,14 +89,14 @@ class MainWindow(QMainWindow):
         self.ui.editPrevWeekBtn.clicked.connect(lambda: self.controller.update_calendar(self.ui.editsemaine, self.editcalendar, self.ui.tableedit, 'Editer', previous_week=True))
         self.ui.editAddEventBtn.clicked.connect(lambda: self.controller.displaypopup(iseditable=True))
         
-        self.ui.editeteampicker.addItems(globals.EQUIPES_UTILISATEUR.keys())
+        self.ui.editeteampicker.addItems(globals.EQUIPES_GEREES_UTILISATEUR.keys())
         
         self.ui.editeteampicker.currentIndexChanged.connect(lambda: self.controller.change_persons())
         self.ui.editpersonpicker.currentIndexChanged.connect(lambda: self.controller.update_calendar(self.ui.editsemaine, self.editcalendar, self.ui.tableedit, 'Editer'))
         
         # Si il modere au moins une equipe on affiche les equipes sinon il ne peut modifier que son edt
-        if len(globals.EQUIPES_UTILISATEUR) >= 1:
-            self.ui.editpersonpicker.addItems(globals.EQUIPES_UTILISATEUR[list(globals.EQUIPES_UTILISATEUR)[0]])
+        if len(globals.EQUIPES_GEREES_UTILISATEUR) >= 1:
+            self.ui.editpersonpicker.addItems(globals.EQUIPES_GEREES_UTILISATEUR[list(globals.EQUIPES_GEREES_UTILISATEUR)[0]])
         else:
             self.ui.editpersonpicker.addItem(globals.USERNAME_UTILISATEUR)
         
@@ -158,7 +158,6 @@ if __name__ == "__main__":
     locale.setlocale(locale.LC_TIME, 'fr_FR')
 
     globals.EVENT_LIEUX = [element[0] for element in globals.db.fetch('SELECT LIEU.Nom FROM LIEU')]
-    globals.EQUIPES = [element[0] for element in globals.db.fetch('SELECT EQUIPE.Nom FROM EQUIPE')]
     globals.EVENT_TYPES_AND_COLORS = {types: colors for types, colors in globals.db.fetch('SELECT TYPE.Nom, TYPE.Couleur FROM TYPE')}
     globals.PERSONNES = [element[0] for element in globals.db.fetch('SELECT EMPLOYES.Username, EMPLOYES.Nom FROM EMPLOYES')]
     
@@ -169,9 +168,8 @@ if __name__ == "__main__":
         INNER JOIN EQUIPE ON  PARTICIPANT_G.EquipeID_ext=EQUIPE.EquipeID
     """
 
-    result = globals.db.fetch(query)
-    globals.EQUIPES_DB = {element[1]: [] for element in result}
-    [globals.EQUIPES_DB[element[1]].append(element[0]) for element in result]
+    result = globals.db.fetch(query)    
+    globals.EQUIPES_DB = {element[1]: [e[0] for e in result if e[1] == element[1]] for element in result}
     
 
     app = QApplication(sys.argv)
