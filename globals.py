@@ -12,14 +12,22 @@ PRENOM_UTILISATEUR = ""
 USERNAME_UTILISATEUR = ""
 NOMBRE_HEURES_UTILISATEUR = 0
 EQUIPES_UTILISATEUR = {}
+PERSONNE_GEREE_USER = []
 
 EVENT_LIEUX = []
 EVENT_TYPES_AND_COLORS = {}
 EQUIPES = []
 PERSONNES = ()
+EQUIPES_DB = {}
 
-CURRENT_EVENT_ID_EDITED = ""
+CURRENT_EDITED_EVENT_ID = None
 
+EVENT_KEYS = ["Id", "Nom", "Place", "StartTime", "EndTime", "EventType"]
+
+ROLES_ID = {
+    "collaborateur": 1,
+    "Manager": 0,
+}
 
 PLANNING_TABS = {
     'Planning': [],

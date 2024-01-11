@@ -6,7 +6,7 @@
 
 import sys
 import globals
-from functions import LoginController, MainController, save_user, read_user
+from functions import LoginController, MainController, save_user, read_user, get_teams_managed_user
 import locale
 from datetime import datetime
 import os
@@ -86,19 +86,28 @@ class MainWindow(QMainWindow):
         # self.ui.editPickerWeekBtn.clicked.connect()
         self.ui.editAddEventBtn.clicked.connect(lambda: self.controller.displaypopup(iseditable=True))
         
+        self.ui.editeteampicker.addItems(globals.EQUIPES_UTILISATEUR.keys())
+        self.ui.editeteampicker.currentIndexChanged.connect(lambda: self.controller.change_persons())
         
         self.ui.editpersonpicker.currentIndexChanged.connect(lambda: self.controller.update_calendar(self.ui.editsemaine, self.editcalendar, self.ui.tableedit, 'Editer'))
         
+        if len(globals.EQUIPES_UTILISATEUR) > 0:
+            self.ui.editpersonpicker.addItems(globals.EQUIPES_UTILISATEUR[list(globals.EQUIPES_UTILISATEUR)[0]])
+        else:
+            self.ui.editpersonpicker.addItem(globals.USERNAME_UTILISATEUR)
+        
         ## Popup event
-        self.ui.closepopupBtn.clicked.connect(lambda: self.ui.popupContainer.collapseMenu())
+        self.ui.closepopupBtn.clicked.connect(lambda: self.controller.close_popup())
         self.ui.popupsaveBtn.clicked.connect(lambda: self.controller.save_edit_event())
         
         self.ui.popupdatedebut.setCalendarPopup(True)
         self.ui.popupdatedebut.setDateTime(QDateTime.currentDateTime())
+        self.ui.popupdatedebut.dateTimeChanged.connect(lambda new_date_debut: self.controller.edit_popup_on_date_change(new_date_debut.toPython(), self.ui.popupdatefin.dateTime().toPython()))
+        
         self.ui.popupdatefin.setCalendarPopup(True)
         self.ui.popupdatefin.setDateTime(QDateTime.currentDateTime())
-        
-        # self.ui.popuplieux.setEditable(True) # Permet d'ecrire et non pas seulement selectionner dans la liste si a True
+        self.ui.popupdatefin.dateTimeChanged.connect(lambda new_date_fin: self.controller.edit_popup_on_date_change(self.ui.popupdatedebut.dateTime().toPython(), new_date_fin.toPython()))
+
 
         ## Initialisation des valeurs par default
         self.ui.name.setText(globals.PRENOM_UTILISATEUR)
@@ -122,6 +131,7 @@ class MainWindow(QMainWindow):
             new_login_dialog = LoginDialog()
             if new_login_dialog.exec_() == QDialog.Accepted:
                 save_user()
+                get_teams_managed_user()
                 new_main_window = MainWindow()
                 new_main_window.show()
 
@@ -133,8 +143,19 @@ if __name__ == "__main__":
     globals.EQUIPES = [element[0] for element in globals.db.fetch('SELECT EQUIPE.Nom FROM EQUIPE')]
     globals.EVENT_TYPES_AND_COLORS = {types: colors for types, colors in globals.db.fetch('SELECT TYPE.Nom, TYPE.Couleur FROM TYPE')}
     globals.PERSONNES = [element[0] for element in globals.db.fetch('SELECT EMPLOYES.Username, EMPLOYES.Nom FROM EMPLOYES')]
-    print(globals.PERSONNES)
     
+    query = """
+        SELECT EMPLOYES.Username, EQUIPE.Nom
+        FROM EMPLOYES
+        INNER JOIN PARTICIPANT_G ON EMPLOYES.EmployesID=PARTICIPANT_G.EmployesID_ext2
+        INNER JOIN EQUIPE ON  PARTICIPANT_G.EquipeID_ext=EQUIPE.EquipeID
+    """
+
+    result = globals.db.fetch(query)
+    globals.EQUIPES_DB = {element[1]: [] for element in result}
+    [globals.EQUIPES_DB[element[1]].append(element[0]) for element in result]
+    
+
     app = QApplication(sys.argv)
 
     # Vérifier si le fichier temporaire existe
@@ -145,9 +166,14 @@ if __name__ == "__main__":
         if login.exec_() == QDialog.Accepted:
             save_user()
 
+    get_teams_managed_user()
+    print(globals.PERSONNE_GEREE_USER)
     # Lancer l'application
     mainwindow = MainWindow()
     mainwindow.show()
     
     sys.exit(app.exec_())
 
+
+
+### {'Equipe 4': ['Louise.Lalin', 'Timeo.Locqueneux', 'Augustin.Fernandes'], 'Equipe 7': ['Louise.Lalin', 'Cesar.Desmarets', 'RichTresor.TsagueZangue', 'Victor.Huckel', 'PierreJean.LeRossignol', 'Augustin.Fernandes'], 'Equipe 8': ['Louise.Lalin', 'Jeremie.Pinchon', 'Timothe.DeDonckers', 'Timeo.Locqueneux', 'Titouan.Bodin', 'PierreJean.LeRossignol', 'Augustin.Fernandes']}

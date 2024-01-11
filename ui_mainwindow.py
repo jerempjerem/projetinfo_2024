@@ -788,7 +788,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_11.addWidget(self.editeteampicker)
 
         self.editpersonpicker = QComboBox(self.widget_7)
-        self.editpersonpicker.addItem("")
         self.editpersonpicker.setObjectName(u"editpersonpicker")
         sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         sizePolicy3.setHorizontalStretch(0)
@@ -1095,35 +1094,6 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setHorizontalSpacing(80)
         self.gridLayout.setVerticalSpacing(0)
-        self.label_5 = QLabel(self.widget_14)
-        self.label_5.setObjectName(u"label_5")
-        self.label_5.setFont(font6)
-
-        self.gridLayout.addWidget(self.label_5, 1, 0, 1, 1)
-
-        self.popupdatedebut = QDateTimeEdit(self.widget_14)
-        self.popupdatedebut.setObjectName(u"popupdatedebut")
-        sizePolicy1.setHeightForWidth(self.popupdatedebut.sizePolicy().hasHeightForWidth())
-        self.popupdatedebut.setSizePolicy(sizePolicy1)
-        self.popupdatedebut.setMaximumSize(QSize(16777215, 25))
-        font7 = QFont()
-        font7.setFamily(u"Sans Serif Collection")
-        font7.setPointSize(9)
-        font7.setBold(False)
-        font7.setWeight(50)
-        self.popupdatedebut.setFont(font7)
-        self.popupdatedebut.setCursor(QCursor(Qt.PointingHandCursor))
-        self.popupdatedebut.setFocusPolicy(Qt.WheelFocus)
-        self.popupdatedebut.setButtonSymbols(QAbstractSpinBox.NoButtons)
-
-        self.gridLayout.addWidget(self.popupdatedebut, 0, 1, 1, 1)
-
-        self.label_4 = QLabel(self.widget_14)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setFont(font6)
-
-        self.gridLayout.addWidget(self.label_4, 0, 0, 1, 1)
-
         self.popupdatefin = QDateTimeEdit(self.widget_14)
         self.popupdatefin.setObjectName(u"popupdatefin")
         sizePolicy4 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -1132,10 +1102,10 @@ class Ui_MainWindow(object):
         sizePolicy4.setHeightForWidth(self.popupdatefin.sizePolicy().hasHeightForWidth())
         self.popupdatefin.setSizePolicy(sizePolicy4)
         self.popupdatefin.setMaximumSize(QSize(16777215, 25))
-        font8 = QFont()
-        font8.setFamily(u"Sans Serif Collection")
-        font8.setPointSize(9)
-        self.popupdatefin.setFont(font8)
+        font7 = QFont()
+        font7.setFamily(u"Sans Serif Collection")
+        font7.setPointSize(9)
+        self.popupdatefin.setFont(font7)
         self.popupdatefin.setCursor(QCursor(Qt.PointingHandCursor))
         self.popupdatefin.setFocusPolicy(Qt.WheelFocus)
         self.popupdatefin.setButtonSymbols(QAbstractSpinBox.NoButtons)
@@ -1143,18 +1113,61 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.popupdatefin, 1, 1, 1, 1)
 
-        self.popuplieux = QComboBox(self.widget_14)
-        self.popuplieux.setObjectName(u"popuplieux")
-        self.popuplieux.setMinimumSize(QSize(0, 25))
-        self.popuplieux.setFocusPolicy(Qt.WheelFocus)
+        self.label_4 = QLabel(self.widget_14)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setFont(font6)
 
-        self.gridLayout.addWidget(self.popuplieux, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_4, 0, 0, 1, 1)
+
+        self.label_5 = QLabel(self.widget_14)
+        self.label_5.setObjectName(u"label_5")
+        self.label_5.setFont(font6)
+
+        self.gridLayout.addWidget(self.label_5, 1, 0, 1, 1)
 
         self.label_6 = QLabel(self.widget_14)
         self.label_6.setObjectName(u"label_6")
         self.label_6.setFont(font6)
 
         self.gridLayout.addWidget(self.label_6, 2, 0, 1, 1)
+
+        self.popupdatedebut = QDateTimeEdit(self.widget_14)
+        self.popupdatedebut.setObjectName(u"popupdatedebut")
+        sizePolicy1.setHeightForWidth(self.popupdatedebut.sizePolicy().hasHeightForWidth())
+        self.popupdatedebut.setSizePolicy(sizePolicy1)
+        self.popupdatedebut.setMaximumSize(QSize(16777215, 25))
+        font8 = QFont()
+        font8.setFamily(u"Sans Serif Collection")
+        font8.setPointSize(9)
+        font8.setBold(False)
+        font8.setWeight(50)
+        self.popupdatedebut.setFont(font8)
+        self.popupdatedebut.setCursor(QCursor(Qt.PointingHandCursor))
+        self.popupdatedebut.setFocusPolicy(Qt.WheelFocus)
+        self.popupdatedebut.setButtonSymbols(QAbstractSpinBox.NoButtons)
+
+        self.gridLayout.addWidget(self.popupdatedebut, 0, 1, 1, 1)
+
+        self.popuplieux = QComboBox(self.widget_14)
+        self.popuplieux.setObjectName(u"popuplieux")
+        self.popuplieux.setMinimumSize(QSize(0, 25))
+        self.popuplieux.setFocusPolicy(Qt.WheelFocus)
+        self.popuplieux.setEditable(True)
+
+        self.gridLayout.addWidget(self.popuplieux, 2, 1, 1, 1)
+
+        self.label_9 = QLabel(self.widget_14)
+        self.label_9.setObjectName(u"label_9")
+        self.label_9.setFont(font6)
+
+        self.gridLayout.addWidget(self.label_9, 3, 0, 1, 1)
+
+        self.popuptype = QComboBox(self.widget_14)
+        self.popuptype.setObjectName(u"popuptype")
+        self.popuptype.setMinimumSize(QSize(0, 25))
+        self.popuptype.setEditable(True)
+
+        self.gridLayout.addWidget(self.popuptype, 3, 1, 1, 1)
 
 
         self.verticalLayout_18.addWidget(self.widget_14)
@@ -1241,6 +1254,8 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.stackedplanning.setCurrentIndex(0)
+        self.editeteampicker.setCurrentIndex(-1)
+        self.editpersonpicker.setCurrentIndex(-1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1272,8 +1287,6 @@ class Ui_MainWindow(object):
         self.label_18.setText(QCoreApplication.translate("MainWindow", u"13h", None))
         self.label_24.setText(QCoreApplication.translate("MainWindow", u"18h", None))
         self.editsemaine.setText("")
-        self.editpersonpicker.setItemText(0, QCoreApplication.translate("MainWindow", u"Louise.Lalin", None))
-
         self.editpersonpicker.setCurrentText("")
         self.editpersonpicker.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Selection employ\u00e9", None))
         self.editPrevWeekBtn.setText("")
@@ -1292,9 +1305,10 @@ class Ui_MainWindow(object):
         self.label_25.setText(QCoreApplication.translate("MainWindow", u"18h", None))
         self.popupeventname.setText(QCoreApplication.translate("MainWindow", u"Activit\u00e9", None))
         self.closepopupBtn.setText("")
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Date de fin :", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Date de debut :", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Date de fin :", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Lieux :", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"Type :", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Personnes :", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Equipes :", None))
         self.popupsaveBtn.setText(QCoreApplication.translate("MainWindow", u" Save", None))

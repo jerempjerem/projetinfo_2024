@@ -1,4 +1,5 @@
 from datetime import datetime , timedelta
+# from main import MainWindow, LoginDialog
 import os
 import sys
 import globals
@@ -6,6 +7,7 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 import json
+import hashlib
 
 def read_user():
     with open(globals.PATH_TEMP_FILE, 'r') as existing_file:
@@ -19,12 +21,48 @@ def save_user():
     with open(globals.PATH_TEMP_FILE, 'w') as new_file:
         json.dump(data, new_file, indent=2)
 
+def get_teams_managed_user():
+    print(globals.USERNAME_UTILISATEUR)
+    query = """
+        SELECT EQUIPE.Nom
+        FROM EMPLOYES
+        INNER JOIN PARTICIPANT_G ON EMPLOYES.EmployesID= PARTICIPANT_G.EmployesID_ext2
+        INNER JOIN EQUIPE ON PARTICIPANT_G.EquipeID_ext = EQUIPE.EquipeID
+        INNER JOIN ROLE ON PARTICIPANT_G.RoleID_ext = ROLE.RoleID
+        WHERE EMPLOYES.Username = %s AND ROLE.RoleID = 0;
+    """
+    result = [element[0] for element in globals.db.fetch(query, (globals.USERNAME_UTILISATEUR,))]
+    globals.EQUIPES_UTILISATEUR = {equipe: None for equipe in result}
+    
+    personne_geree_user = []
+    for equipe in result:
+        query = """
+            SELECT EMPLOYES.Username
+            FROM EMPLOYES
+            INNER JOIN PARTICIPANT_G ON EMPLOYES.EmployesID= PARTICIPANT_G.EmployesID_ext2
+            INNER JOIN EQUIPE ON PARTICIPANT_G.EquipeID_ext = EQUIPE.EquipeID
+            INNER JOIN ROLE ON PARTICIPANT_G.RoleID_ext = ROLE.RoleID
+            WHERE EQUIPE.Nom=%s
+            ORDER BY ROLE.RoleID
+        """
+    
+        result = [element[0] for element in globals.db.fetch(query, (equipe,))]
+        
+        personne_geree_user += result
+        globals.EQUIPES_UTILISATEUR[equipe] = result
+    
+    globals.PERSONNE_GEREE_USER = element_distinct_list(personne_geree_user)
 def element_distinct_list(liste: list) -> list:
     return list(set(liste))
 
+def hasher_mot_de_passe(mot_de_passe):
+    hasher = hashlib.sha256()
+    hasher.update(mot_de_passe.encode('utf-8'))
+    hash_resultat = hasher.hexdigest()
+    return hash_resultat
 
 class MainController():
-    def __init__(self, parent : QMainWindow) -> None:
+    def __init__(self, parent) -> None:
         self.parent = parent
                 
     def update_calendar(self, plage_label: QLabel, calendar_labels: list[QLabel], table: QTableWidget, tab: str, previous_week : bool = False, next_week : bool = False, option_date: str = None):
@@ -76,19 +114,27 @@ class MainController():
         self.parent.ui.popupteams.clearSelection()
         self.parent.ui.popuppersons.clearSelection()
         self.parent.ui.popuplieux.clear()
+        self.parent.ui.popuptype.clear()
         
         if event:
+            globals.CURRENT_EDITED_EVENT_ID = event['Id']
             personnes, equipes = self._equipe_et_personnes_event(event['Id'])
 
             if iseditable:
                 self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], element_distinct_list([event['Place']] + globals.EVENT_LIEUX),
-                                 element_distinct_list(equipes + globals.EQUIPES), element_distinct_list(personnes + globals.PERSONNES))
+                                 element_distinct_list(equipes + globals.EQUIPES), element_distinct_list(personnes + globals.PERSONNES),
+                                 element_distinct_list([event['EventType']] + list(globals.EVENT_TYPES_AND_COLORS.keys())))
                 self._set_popup_to_writeonly()
             else:
-                self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], [event['Place']], equipes, personnes)
+                self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], [event['Place']], equipes, personnes, list(globals.EVENT_TYPES_AND_COLORS.keys()))
                 self._set_popup_to_readonly()
         else:
-            self._edit_popup("Nom de l'event", datetime.now(), datetime.now(), globals.EVENT_LIEUX, globals.EQUIPES, globals.PERSONNES)
+            date_debut = datetime.now()
+            date_fin = date_debut+timedelta(hours=2)
+            
+            lieux_dispo, personne_dispo, equipes_dispo = self._lieu_equipe_personne_dispo(date_debut, date_fin)
+
+            self._edit_popup("Nom de l'event", date_debut, date_fin, lieux_dispo, equipes_dispo, personne_dispo, list(globals.EVENT_TYPES_AND_COLORS.keys()))
 
             
         self.parent.ui.popupContainer.expandMenu()    
@@ -98,26 +144,48 @@ class MainController():
         date_debut = self.parent.ui.popupdatedebut.dateTime().toPython()
         date_fin = self.parent.ui.popupdatefin.dateTime().toPython()
         lieu = self.parent.ui.popuplieux.currentText()
+        event_type = self.parent.ui.popuptype.currentText()
         equipes = [item.text() for item in self.parent.ui.popupteams.selectedItems()]
         personnes = [item.text() for item in self.parent.ui.popuppersons.selectedItems()]
-        
-        print(event_name)
-        print(date_debut, type(date_debut))
-        print(date_fin, type(date_fin))
-        print(lieu)
-        print(equipes)
-        print(personnes)
 
         if lieu not in globals.EVENT_LIEUX:
             # Ajouter dans la BDD
             globals.EVENT_LIEUX.append(lieu)
             
-        if not globals.CURRENT_EVENT_ID_EDITED:
-            # Nouvel event on l'ajoute a la BDD
-            return
-        else :
+        if event_type not in list(globals.EVENT_TYPES_AND_COLORS.keys()):
+            # Ajouter dans la BDD
+            globals.EVENT_LIEUX.append(lieu)
+            
+        if globals.CURRENT_EDITED_EVENT_ID is not None:
             # Event existant on le modifie dans la BDD
-            return
+            self._edit_existing_event(event_name, date_debut, date_fin, lieu, event_type, globals.CURRENT_EDITED_EVENT_ID)
+        else :
+            # Nouvel event on l'ajoute a la BDD    
+            self._ajouter_un_evenement(equipes + personnes, event_name, date_debut, date_fin, lieu, event_type)       
+        
+        # refresh le planning d edit
+        self._refresh_table_edit()
+        self.parent.ui.popupContainer.collapseMenu()
+
+    def edit_popup_on_date_change(self, date_debut: datetime, date_fin: datetime):
+
+        lieux_dispo, personne_dispo, equipes_dispo = self._lieu_equipe_personne_dispo(date_debut, date_fin)
+
+        self.parent.ui.popuplieux.clear()
+        self.parent.ui.popuppersons.clear()
+        self.parent.ui.popupteams.clear()
+        
+        self.parent.ui.popuplieux.addItems(lieux_dispo)
+        self.parent.ui.popuppersons.addItems(personne_dispo)
+        self.parent.ui.popupteams.addItems(equipes_dispo)
+
+    def change_persons(self):
+        self.parent.ui.editpersonpicker.clear()
+        self.parent.ui.editpersonpicker.addItems(globals.EQUIPES_UTILISATEUR[self.parent.ui.editeteampicker.currentText()])
+    
+    def close_popup(self):
+        self.parent.ui.popupContainer.collapseMenu()
+        globals.CURRENT_EDITED_EVENT_ID = None
               
     def _get_event_position(self, startTime: datetime) -> (int, int):
         jour = startTime.strftime("%A")
@@ -155,9 +223,7 @@ class MainController():
 
         evenements = globals.db.fetch(query, params+params)
         
-        keys = ["Id", "Nom", "Place", "StartTime", "EndTime", "EventType"]
-
-        return self._format_list_events([dict(zip(keys, event)) for event in evenements])
+        return self._format_list_events([dict(zip(globals.EVENT_KEYS, event)) for event in evenements])
 
     def _get_event_duration(self, debut: datetime, fin: datetime) -> int:
         # Calculer la différence entre les deux dates
@@ -281,6 +347,16 @@ class MainController():
         horizontalLayout_3.setContentsMargins(0, 0, 10, 10)
         
         if isEditable:
+            deleteeventBtn = QPushButton(frame_3)
+            deleteeventBtn.setCursor(QCursor(Qt.PointingHandCursor))
+            icon2 = QIcon()
+            icon2.addFile(u":/icons/icons/trash-2.svg", QSize(), QIcon.Normal, QIcon.Off)
+            deleteeventBtn.setIcon(icon2)
+            deleteeventBtn.setIconSize(QSize(15, 15))
+            deleteeventBtn.clicked.connect(lambda: self._delete_event(event['Id']))
+            
+            horizontalLayout_3.addWidget(deleteeventBtn)
+            
             editeventBtn = QPushButton(frame_3)
             editeventBtn.setCursor(QCursor(Qt.PointingHandCursor))
             icon2 = QIcon()
@@ -363,6 +439,7 @@ class MainController():
         self.parent.ui.popupdatedebut.setReadOnly(False)
         self.parent.ui.popupdatefin.setReadOnly(False)
         self.parent.ui.popuplieux.setEnabled(True)
+        self.parent.ui.popuptype.setEnabled(True)
         self.parent.ui.popupteams.setSelectionMode(QListWidget.MultiSelection)
         self.parent.ui.popuppersons.setSelectionMode(QListWidget.MultiSelection)   
         
@@ -371,9 +448,9 @@ class MainController():
         self.parent.ui.popupdatedebut.setReadOnly(True)
         self.parent.ui.popupdatefin.setReadOnly(True)
         self.parent.ui.popuplieux.setEnabled(False)
+        self.parent.ui.popuptype.setEnabled(False)
         self.parent.ui.popupteams.setSelectionMode(QListWidget.NoSelection)
         self.parent.ui.popuppersons.setSelectionMode(QListWidget.NoSelection)
-        
         
     def _equipe_et_personnes_event(self, eventID: int) -> (list, list):
         query = """
@@ -398,31 +475,173 @@ class MainController():
         
         personnes = element_distinct_list([element[0] for element in resultats])
         equipes = element_distinct_list([element[1] for element in resultats if element[1] is not None])
-        return personnes, equipes
-        
-    def _edit_popup(self, event_name: str, date_debut: datetime, date_fin: datetime, lieux: list, equipes: list, personnes: list):
+        return personnes, equipes 
+       
+    def _edit_popup(self, event_name: str, date_debut: datetime, date_fin: datetime, lieux: list, equipes: list, personnes: list, types: list):
         self.parent.ui.popupeventname.setText(event_name)
         self.parent.ui.popupdatedebut.setDateTime(date_debut)
         self.parent.ui.popupdatefin.setDateTime(date_fin)
         self.parent.ui.popuplieux.addItems(lieux)
+        self.parent.ui.popuptype.addItems(types)
         self.parent.ui.popupteams.addItems(equipes)
         self.parent.ui.popuppersons.addItems(personnes)
         
+    def _edit_existing_event(self, event_name, date_debut, date_fin, lieu, event_type, event_id):
+        lieu_id : list[tuple] = globals.db.fetch("SELECT LIEU.LieuID FROM LIEU WHERE LIEU.Nom = %s", (lieu,))
+        type_id : list[tuple] = globals.db.fetch("SELECT TYPE.TypeID FROM TYPE WHERE TYPE.Nom = %s", (event_type,))
+
+        query = """
+            UPDATE EVENEMENT
+            SET EVENEMENT.Nom=%s, EVENEMENT.DateDebut=%s, EVENEMENT.DateFin=%s, EVENEMENT.LieuID_ext=%s, EVENEMENT.TypeID_ext = %s
+            WHERE EVENEMENT.EvenementID = %s ;
+        """
+        
+        params = (event_name,  date_debut, date_fin, lieu_id[0][0], type_id[0][0], event_id)
+        
+        globals.db.edit(query, params)
+    
+    def _ajouter_un_evenement(self, liste_personnes_equipes: list, event_name:str, date_debut: datetime, date_fin: datetime, lieu: str, event_type: str):
+        compteur = globals.db.fetch("SELECT MAX(EvenementID) FROM EVENEMENT ")
+        lieu_id : list[tuple] = globals.db.fetch("SELECT LIEU.LieuID FROM LIEU WHERE LIEU.Nom = %s", (lieu,))
+        type_id : list[tuple] = globals.db.fetch("SELECT TYPE.TypeID FROM TYPE WHERE TYPE.Nom = %s", (event_type,))
+
+        query = "INSERT INTO EVENEMENT (EvenementID, Nom, DateDebut, DateFin, LieuID_ext, TypeID_ext) VALUES (%s, %s, %s, %s, %s,%s)"
+        params = (compteur[0][0] + 1, event_name , date_debut, date_fin, lieu_id[0][0], type_id[0][0])
+        print(params)
+        globals.db.edit(query, params)
+
+        for personne in liste_personnes_equipes:
+            # Chercher dans la table GROUPE
+            resultats_groupe = globals.db.fetch(f"SELECT EquipeID FROM EQUIPE WHERE Nom = '{personne}'")
+
+            # Chercher dans la table EMPLOYES
+            resultats_employe = globals.db.fetch(f"SELECT EmployesID FROM EMPLOYES WHERE Username = '{personne}'")
+
+            # Insérer dans la table PARTICIPANT_E ou PARTICIPANT_P en fonction du type de résultat
+            if resultats_groupe !=[]:
+                for resultat in resultats_groupe:
+                    globals.db.edit("INSERT INTO PARTICIPANT_E (EvenementID_ext2, EquipeID_ext2) VALUES (%s, %s)",(compteur[0][0] + 1, resultat[0]))
+            if resultats_employe!=[]:
+                for resultat in resultats_employe:
+                    globals.db.edit("INSERT INTO PARTICIPANT_P (EvenementID_ext, EmployesID_ext) VALUES (%s, %s)",(compteur[0][0] + 1, resultat[0]))
+    
+    def _delete_event(self, event_id: int):
+
+        query = [
+            "DELETE FROM PARTICIPANT_P WHERE PARTICIPANT_P.EvenementID_ext = %s;", 
+            "DELETE FROM PARTICIPANT_E WHERE PARTICIPANT_E.EvenementID_ext2 = %s;", 
+            "DELETE FROM EVENEMENT WHERE EVENEMENT.EvenementID = %s;"
+        ]
+        
+        for q in query:
+            globals.db.edit(q, (event_id,))
+            
+        self._refresh_table_edit()
+        
+    def _refresh_table_edit(self):
+        self.update_calendar(self.parent.ui.editsemaine, self.parent.editcalendar, self.parent.ui.tableedit, 'Editer')
+            
+    def _lieux_disponible(self, date_debut: datetime, date_fin: datetime) -> list:
+        query = """
+            SELECT LIEU.Nom
+            FROM LIEU
+
+            EXCEPT
+
+            SELECT LIEU.Nom
+            FROM LIEU
+            INNER JOIN EVENEMENT ON LIEU.LieuID = EVENEMENT.LieuID_ext
+
+            WHERE (
+                (EVENEMENT.DateDebut BETWEEN %s AND %s) OR (EVENEMENT.DateFin BETWEEN %s AND %s) 
+                OR 
+                (%s BETWEEN EVENEMENT.DateDebut AND EVENEMENT.DateFin) OR (%s BETWEEN EVENEMENT.DateDebut AND EVENEMENT.DateFin)
+            )
+        """
+        
+        params = (date_debut, date_fin, date_debut, date_fin, date_debut, date_fin)
+        
+        result = [element[0] for element in globals.db.fetch(query, params)]
+        
+        return result
+
+    def _personnes_disponible(self, date_debut : datetime, date_fin : datetime) -> list:
+
+        #Analyse des date debut et fin
+        #requete sql afin d'obtenir un tuple avec la liste des personnes libre.
+        
+        query = """
+            SELECT EMPLOYES.Username
+            FROM EMPLOYES
+
+            EXCEPT
+
+            SELECT EMPLOYES.Username
+            FROM FONCTION
+            INNER JOIN EMPLOYES ON FONCTION.FonctionID=EMPLOYES.FonctionID_ext
+            INNER JOIN PARTICIPANT_G ON EMPLOYES.EmployesID=PARTICIPANT_G.EmployesID_ext2
+            INNER JOIN EQUIPE ON PARTICIPANT_G.EquipeID_ext=EQUIPE.EquipeID
+            INNER JOIN PARTICIPANT_E ON EQUIPE.EquipeID=PARTICIPANT_E.EquipeID_ext2
+            INNER JOIN EVENEMENT ON PARTICIPANT_E.EvenementID_ext2=EVENEMENT.EvenementID
+            WHERE (
+                (EVENEMENT.DateDebut BETWEEN %s AND %s) OR (EVENEMENT.DateFin BETWEEN %s AND %s) 
+                OR 
+                (%s BETWEEN EVENEMENT.DateDebut AND EVENEMENT.DateFin) OR (%s BETWEEN EVENEMENT.DateDebut AND EVENEMENT.DateFin)
+            )
+
+            EXCEPT
+
+            SELECT EMPLOYES.Username
+            FROM EVENEMENT
+            INNER JOIN PARTICIPANT_P ON EVENEMENT.EvenementID=PARTICIPANT_P.EvenementID_ext
+            INNER JOIN EMPLOYES ON PARTICIPANT_P.EmployesID_ext=EMPLOYES.EmployesID
+            INNER JOIN FONCTION ON EMPLOYES.FonctionID_ext=FONCTION.FonctionID
+            WHERE (
+                (EVENEMENT.DateDebut BETWEEN %s AND %s) OR (EVENEMENT.DateFin BETWEEN %s AND %s) 
+                OR 
+                (%s BETWEEN EVENEMENT.DateDebut AND EVENEMENT.DateFin) OR (%s BETWEEN EVENEMENT.DateDebut AND EVENEMENT.DateFin)
+            )
+        """
+        params = (date_debut, date_fin, date_debut, date_fin, date_debut, date_fin, date_debut, date_fin, date_debut, date_fin, date_debut, date_fin)
+        
+        personne_libre = [element[0] for element in globals.db.fetch(query, params)]
+        
+        return list(set(personne_libre) & set(globals.PERSONNE_GEREE_USER))
+    
+    def _equipe_libre(self, personne_libre: list) -> list:
+        equipes_libre = []
+        
+        for equipe, personne_equipe in globals.EQUIPES_DB.items():
+            
+            intersection_personne = set(personne_equipe) & set(personne_libre) 
+            
+            if intersection_personne == set(personne_equipe):
+                equipes_libre.append(equipe)
+                
+        return list(set(equipes_libre) & set(globals.EQUIPES_UTILISATEUR))
+    
+    def _lieu_equipe_personne_dispo(self, date_debut : datetime, date_fin : datetime) -> (list, list, list):
+        lieux_dispo = self._lieux_disponible(date_debut, date_fin)  
+        personne_dispo = self._personnes_disponible(date_debut, date_fin)
+        equipes_dispo = self._equipe_libre(personne_dispo)
+        return lieux_dispo, personne_dispo, equipes_dispo
+    
+    
 class LoginController():
-    def __init__(self, parent : QDialog) -> None:
+    def __init__(self, parent) -> None:
         self.parent = parent
         
     def login(self):
             query = f"SELECT UserName, Mdp, Prenom, NbHeure FROM EMPLOYES WHERE Username='{self.parent.ui.username.text()}'"
             result = globals.db.fetch(query)
-            print(result)
+
             if result:
-                password = result[0][1]
+                hashed_password = result[0][1]
                 globals.PRENOM_UTILISATEUR = result[0][2]
                 globals.USERNAME_UTILISATEUR = result[0][0]
                 globals.NOMBRE_HEURES_UTILISATEUR = float(result[0][3])
                 
-                if password == self.parent.ui.password.text():
+                if hashed_password == hasher_mot_de_passe(self.parent.ui.password.text()):
                     self.parent.accept()
                 else:
                     self.parent.ui.password.clear()

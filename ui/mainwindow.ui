@@ -1306,6 +1306,9 @@ QListView {
                    <property name="cursor">
                     <cursorShape>PointingHandCursor</cursorShape>
                    </property>
+                   <property name="currentIndex">
+                    <number>-1</number>
+                   </property>
                   </widget>
                  </item>
                  <item>
@@ -1339,6 +1342,9 @@ QListView {
                    <property name="currentText">
                     <string/>
                    </property>
+                   <property name="currentIndex">
+                    <number>-1</number>
+                   </property>
                    <property name="maxVisibleItems">
                     <number>30</number>
                    </property>
@@ -1351,11 +1357,6 @@ QListView {
                    <property name="placeholderText">
                     <string>Selection employé</string>
                    </property>
-                   <item>
-                    <property name="text">
-                     <string>Louise.Lalin</string>
-                    </property>
-                   </item>
                   </widget>
                  </item>
                  <item alignment="Qt::AlignLeft">
@@ -2029,6 +2030,55 @@ border-bottom: 2px solid black;
              <property name="verticalSpacing">
               <number>0</number>
              </property>
+             <item row="1" column="1">
+              <widget class="QDateTimeEdit" name="popupdatefin">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>25</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Sans Serif Collection</family>
+                 <pointsize>9</pointsize>
+                </font>
+               </property>
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::WheelFocus</enum>
+               </property>
+               <property name="buttonSymbols">
+                <enum>QAbstractSpinBox::NoButtons</enum>
+               </property>
+               <property name="correctionMode">
+                <enum>QAbstractSpinBox::CorrectToPreviousValue</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="font">
+                <font>
+                 <family>Sans Serif Collection</family>
+                 <pointsize>9</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Date de debut :</string>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_5">
                <property name="font">
@@ -2041,6 +2091,21 @@ border-bottom: 2px solid black;
                </property>
                <property name="text">
                 <string>Date de fin :</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_6">
+               <property name="font">
+                <font>
+                 <family>Sans Serif Collection</family>
+                 <pointsize>9</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Lieux :</string>
                </property>
               </widget>
              </item>
@@ -2077,55 +2142,6 @@ border-bottom: 2px solid black;
                </property>
               </widget>
              </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_4">
-               <property name="font">
-                <font>
-                 <family>Sans Serif Collection</family>
-                 <pointsize>9</pointsize>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Date de debut :</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QDateTimeEdit" name="popupdatefin">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>25</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Sans Serif Collection</family>
-                 <pointsize>9</pointsize>
-                </font>
-               </property>
-               <property name="cursor">
-                <cursorShape>PointingHandCursor</cursorShape>
-               </property>
-               <property name="focusPolicy">
-                <enum>Qt::WheelFocus</enum>
-               </property>
-               <property name="buttonSymbols">
-                <enum>QAbstractSpinBox::NoButtons</enum>
-               </property>
-               <property name="correctionMode">
-                <enum>QAbstractSpinBox::CorrectToPreviousValue</enum>
-               </property>
-              </widget>
-             </item>
              <item row="2" column="1">
               <widget class="QComboBox" name="popuplieux">
                <property name="minimumSize">
@@ -2137,10 +2153,13 @@ border-bottom: 2px solid black;
                <property name="focusPolicy">
                 <enum>Qt::WheelFocus</enum>
                </property>
+               <property name="editable">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_6">
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_9">
                <property name="font">
                 <font>
                  <family>Sans Serif Collection</family>
@@ -2150,7 +2169,20 @@ border-bottom: 2px solid black;
                 </font>
                </property>
                <property name="text">
-                <string>Lieux :</string>
+                <string>Type :</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QComboBox" name="popuptype">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>25</height>
+                </size>
+               </property>
+               <property name="editable">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
