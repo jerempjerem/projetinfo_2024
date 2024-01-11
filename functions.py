@@ -22,7 +22,7 @@ def save_user():
         json.dump(data, new_file, indent=2)
 
 def get_teams_managed_user():
-    print(globals.USERNAME_UTILISATEUR)
+
     query = """
         SELECT EQUIPE.Nom
         FROM EMPLOYES
@@ -52,6 +52,7 @@ def get_teams_managed_user():
         globals.EQUIPES_UTILISATEUR[equipe] = result
     
     globals.PERSONNE_GEREE_USER = element_distinct_list(personne_geree_user)
+
 def element_distinct_list(liste: list) -> list:
     return list(set(liste))
 
@@ -111,8 +112,8 @@ class MainController():
                 self.parent.ui.planningnbheures.setStyleSheet('color: red')
             
     def displaypopup(self, event: dict = None, iseditable : bool = False):
-        self.parent.ui.popupteams.clearSelection()
-        self.parent.ui.popuppersons.clearSelection()
+        self.parent.ui.popupteams.clear()
+        self.parent.ui.popuppersons.clear()
         self.parent.ui.popuplieux.clear()
         self.parent.ui.popuptype.clear()
         

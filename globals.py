@@ -1,9 +1,25 @@
-from database import Database
+########################################################################
+# Ce fichier permet de stocker les variables constante et/ou les 
+# variables qu'on utilise dans plusieurs fichiers/fonctions
+# differentes et de pouvoir y acceder facilement sans probleme de porté
+# de variables
+########################################################################
+
+########################################################################
+# IMPORT LIBRARIES
 import tempfile
 import os
+########################################################################
+
+
+########################################################################
+# IMPORT FILES
+from database import Database
+########################################################################
 
 db = Database()
 
+# Nom et chemin du fichier utilisé pour stocker la session de l'utilisateur authentifié
 TEMPFILE_NAME = "planning_session"
 PATH_TEMP_FILE = os.path.join(tempfile.gettempdir(), f"{TEMPFILE_NAME}.json")
 

@@ -1,5 +1,6 @@
 import mysql.connector
 
+
 class Database():
 
     def __init__(self):
@@ -8,7 +9,6 @@ class Database():
         self.host = 'mysql-pierre-jean.alwaysdata.net'
         self.database = 'pierre-jean_info'
         
-
     def fetch(self, query: str, params: tuple = ()) -> list:
         """
         Fonction permettant de récupérer des données dans une database donnée.
@@ -38,6 +38,7 @@ class Database():
             cursor.execute(query, variables)
             self.connection.commit()
             cursor.close()
+            self.connection.close()
 
     def connect(self) -> bool:
         """
