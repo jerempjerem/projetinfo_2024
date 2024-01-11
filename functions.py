@@ -96,6 +96,21 @@ def hasher_mot_de_passe(mot_de_passe: str) -> str:
     hash_resultat = hasher.hexdigest()
     return hash_resultat
 
+def couleur_pastel() -> str:
+    """
+    Générer trois composantes de couleur pastel (rouge, vert, bleu)
+
+    Returns:
+        str: couleur en hexadecimal
+    """
+    rouge = random.randint(150, 255)  # Ajustez la gamme pour des teintes plus claires
+    vert = random.randint(150, 255)
+    bleu = random.randint(150, 255)
+
+    # Convertir les composantes en format hexadécimal
+    couleur_hex = "#{:02x}{:02x}{:02x}".format(rouge, vert, bleu)
+
+    return couleur_hex
 
 ###########################################################################################
 ## CLASS QUI REGROUPE TOUTES LES FONCTIONS QUI SERVENT A CONTROLLER LA FENETRE PRINCIPALES
@@ -105,8 +120,21 @@ class MainController():
         self.parent = parent
                 
     def update_calendar(self, plage_label: QLabel, calendar_labels: list[QLabel], table: QTableWidget, tab: str, previous_week : bool = False, next_week : bool = False, option_date: str = None):
-        # Changement des dates afficher
-        table.clearContents()
+        """
+        Permet de mettre à jour l'agenda, la plage de date et les dates de l'agenda
+
+        Args:
+            plage_label (QLabel): Label a modifié qui indique la plage de date (la semaine) affiché sur l'agenda
+            calendar_labels (list[QLabel]): Liste des labels des jours de l'agenda pour chaque planning
+            table (QTableWidget): table a mettre à jour
+            tab (str): page ouu l'on se trouve
+            previous_week (bool, optional): Mettre à jour l'agenda a la semaine precedente. Defaults to False.
+            next_week (bool, optional): Mettre à jour l'agenda a la semaine suivante. Defaults to False.
+            option_date (str, optional): Mettre à jour l'agenda a la semaine d'une date precise. Defaults to None.
+        """
+        
+        ## CHANGEMENT DES DATES A AFFICHER
+        table.clearContents() # Supprime tous les evenements actuellement dans la table
         table.clearSpans()
         
         if option_date:
@@ -132,7 +160,7 @@ class MainController():
         [calendar_labels[i].setText(calendar_dates[i]) for i in range(len(calendar_labels))]
         plage_label.setText(planning_plage)
         
-        # Changement des evenements
+        ## CHANGEMENT DES EVENEMENTS
         total_heures_semaine = 0
         for event in self._get_all_event_user(globals.PLANNING_TABS[tab], user_selected):
             duration = self._get_event_duration(event['StartTime'], event['EndTime'])
@@ -150,15 +178,18 @@ class MainController():
                 self.parent.ui.planningnbheures.setStyleSheet('color: red')
             
     def displaypopup(self, event: dict = None, iseditable : bool = False):
-        self.parent.ui.popupteams.clear()
-        self.parent.ui.popuppersons.clear()
-        self.parent.ui.popuplieux.clear()
-        self.parent.ui.popuptype.clear()
-        
+        """
+        Affiche la popup de creation/modification et affichage des details avec les bonnes information
+
+        Args:
+            event (dict, optional): evenement à afficher . Defaults to None.
+            iseditable (bool, optional): Information affiché dans le popup modifiable. Defaults to False.
+        """
+
         if event:
             globals.CURRENT_EDITED_EVENT_ID = event['Id']
             personnes, equipes = self._equipe_et_personnes_event(event['Id'])
-
+            
             if iseditable:
                 self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], element_distinct_list([event['Place']] + globals.EVENT_LIEUX),
                                  element_distinct_list(equipes + list(globals.EQUIPES_DB.keys())), element_distinct_list(personnes + globals.PERSONNES),
@@ -174,11 +205,16 @@ class MainController():
             lieux_dispo, personne_dispo, equipes_dispo = self._lieu_equipe_personne_dispo(date_debut, date_fin)
 
             self._edit_popup("Nom de l'event", date_debut, date_fin, lieux_dispo, equipes_dispo, personne_dispo, list(globals.EVENT_TYPES_AND_COLORS.keys()))
-
+            self._set_popup_to_writeonly()
             
-        self.parent.ui.popupContainer.expandMenu()    
+        self.parent.ui.popupContainer.expandMenu() # Affiche le popup  
         
     def save_edit_event(self):
+        """
+        Sauvegarde dans la bdd l'evenement créer ou modifié dans le popup
+        """
+        
+        ## RECUPERATION DES INFORMATIONS DE L'EVENEMENT DANS LE POPUP   
         event_name = self.parent.ui.popupeventname.text()
         date_debut = self.parent.ui.popupdatedebut.dateTime().toPython()
         date_fin = self.parent.ui.popupdatefin.dateTime().toPython()
@@ -187,26 +223,32 @@ class MainController():
         equipes = [item.text() for item in self.parent.ui.popupteams.selectedItems()]
         personnes = [item.text() for item in self.parent.ui.popuppersons.selectedItems()]
 
+        # Si le lieu n'est pas deja present dans la bdd on l'ajoute
         if lieu not in globals.EVENT_LIEUX:
-            # Ajouter dans la BDD
-            globals.EVENT_LIEUX.append(lieu)
-            
+            self._ajouter_un_nouveau_lieu(lieu)
+        
+        # Si le type de l'evenement n'est pas deja present dans la bdd on l'ajoute
         if event_type not in list(globals.EVENT_TYPES_AND_COLORS.keys()):
-            # Ajouter dans la BDD
-            globals.EVENT_LIEUX.append(lieu)
+            self._ajouter_un_nouveau_type_evenement(event_type)
             
         if globals.CURRENT_EDITED_EVENT_ID is not None:
-            # Event existant on le modifie dans la BDD
             self._edit_existing_event(event_name, date_debut, date_fin, lieu, event_type, globals.CURRENT_EDITED_EVENT_ID)
         else :
-            # Nouvel event on l'ajoute a la BDD    
-            self._ajouter_un_evenement(equipes + personnes, event_name, date_debut, date_fin, lieu, event_type)       
+            self._ajouter_un_nouvel_evenement(equipes + personnes, event_name, date_debut, date_fin, lieu, event_type)       
         
         # refresh le planning d edit
         self._refresh_table_edit()
-        self.parent.ui.popupContainer.collapseMenu()
+        
+        self.close_popup()
 
     def edit_popup_on_date_change(self, date_debut: datetime, date_fin: datetime):
+        """
+        Mettre a jour les donnes de personnes, equipe et lieu libre lors du changement de date dans le popup
+
+        Args:
+            date_debut (datetime): date de debut de l'evenement changé
+            date_fin (datetime): date de fin de l'evenement changé
+        """
 
         lieux_dispo, personne_dispo, equipes_dispo = self._lieu_equipe_personne_dispo(date_debut, date_fin)
 
@@ -219,14 +261,37 @@ class MainController():
         self.parent.ui.popupteams.addItems(equipes_dispo)
 
     def change_persons(self):
+        """
+        Permet de modifier les personnes que l'on peut selectionner afin de voir leur agenda dans l'onglet 'EDITER'
+        """
         self.parent.ui.editpersonpicker.clear()
         self.parent.ui.editpersonpicker.addItems(globals.EQUIPES_GEREES_UTILISATEUR[self.parent.ui.editeteampicker.currentText()])
     
     def close_popup(self):
+        """
+        Ferme le popup et enleve les items a enlever
+        """
+        
+        # Permet de ne pas garder les items ajouter avant
+        self.parent.ui.popuplieux.clear()
+        self.parent.ui.popuppersons.clear()
+        self.parent.ui.popupteams.clear()
+        
         self.parent.ui.popupContainer.collapseMenu()
-        globals.CURRENT_EDITED_EVENT_ID = None
+        
+        globals.CURRENT_EDITED_EVENT_ID = None # Il n'y a plus d'evenement en cours de modification ou de creation
               
-    def _get_event_position(self, startTime: datetime) -> (int, int):
+    def _get_event_position(self, startTime: datetime) -> int:
+        """
+        Permet de recuper la ligne et la colonne ou mettre l'evenement dans la table
+
+        Args:
+            startTime (datetime): date de debut
+
+        Returns:
+            int: renvoie la ligne et la colonne ou placer l'evenement
+        """
+        
         jour = startTime.strftime("%A")
         colonne = globals.JOURS_NUMEROTES[jour] - 1
         
@@ -236,6 +301,16 @@ class MainController():
         return colonne, ligne
         
     def _get_all_event_user(self, calendar_week: list, user_selected: str) -> list[dict]:
+        """
+        Permet de recuperer tous les evenements d'un utilisateur sur une semaine
+
+        Args:
+            calendar_week (list): semaine ou l'on veut recuperer les evenements
+            user_selected (str): personnes de qui l'on veut recuperer les evenements
+
+        Returns:
+            list[dict]: liste de tous les evenements de la semaine selectionné et de la personne selectionné
+        """
         
         query = """
             SELECT EVENEMENT.EvenementID, EVENEMENT.Nom, LIEU.Nom, EVENEMENT.DateDebut, EVENEMENT.DateFin, TYPE.Nom, EMPLOYES.Prenom
@@ -258,6 +333,7 @@ class MainController():
             INNER JOIN LIEU ON EVENEMENT.LieuID_ext=LIEU.LieuID
             WHERE EMPLOYES.UserName=%s AND EVENEMENT.DateDebut BETWEEN %s and %s
         """
+        
         params = (user_selected, datetime.strptime(calendar_week[0], "%d/%m/%Y").strftime("%Y-%m-%d"), datetime.strptime(calendar_week[-1], "%d/%m/%Y").strftime("%Y-%m-%d"))
 
         evenements = globals.db.fetch(query, params+params)
@@ -265,6 +341,17 @@ class MainController():
         return self._format_list_events([dict(zip(globals.EVENT_KEYS, event)) for event in evenements])
 
     def _get_event_duration(self, debut: datetime, fin: datetime) -> int:
+        """
+        Permet de connaitre combien (en arrondissant) de demi-heure un evenement dure et donc combien de case il prendra dans la table
+
+        Args:
+            debut (datetime): date de debut de l'evenement
+            fin (datetime): date de fin de l'evenement
+
+        Returns:
+            int: durée (nombre de demi-heures) de l'evenement
+        """
+        
         # Calculer la différence entre les deux dates
         duree = fin - debut
 
@@ -276,6 +363,16 @@ class MainController():
         return duration
         
     def _get_calendar_dates(self, dates : list[str]) -> list:
+        """
+        Permet de modifier les dates des jours de la semaine de l'agenda en date du type Lun 18/Mar 19 ...
+
+        Args:
+            dates (list[str]): liste des dates de la semaine au format dd/mm/YYYY
+
+        Returns:
+            list: date au bon format pour les afficher sur les colonnes
+        """
+        
         dates_formatees = []
         jours_semaine = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
@@ -287,10 +384,23 @@ class MainController():
             nouvelle_date_str = '{} {}'.format(jours_semaine[date_obj.weekday()], date_obj.strftime('%d'))
             
             dates_formatees.append(nouvelle_date_str)
+            
         return dates_formatees
 
     def _get_weekdates(self, date: str, previous_week: bool = False, next_week: bool = False) -> list[str]:
-        """Par default renvoi la semaine actuelle"""        
+        """
+        Permet de connaitre tous les jours d'une semaine qui suit, precede ou contient une certaines date.
+        Renvoi par default la semaine qui contient cette date.
+
+        Args:
+            date (str): cette certaine date en question ;)
+            previous_week (bool, optional): On veut connaitre la semaine qi precede cette date. Defaults to False.
+            next_week (bool, optional): On veut connaitre la semaine qi suit cette date. Defaults to False.
+
+        Returns:
+            list[str]: liste des jours de la semaine voulu
+        """
+              
         dates = []
         
         formatage_date = datetime.strptime(date, "%d/%m/%Y")     
@@ -309,13 +419,16 @@ class MainController():
         return dates
 
     def _get_plage_dates(self, dates: list[str]) -> str:
+        """
+        Permet de formater l'affichage que l'on va avoir pour la plage des dates de la semaine afficher dans l'agenda
+        """
         
         start_date = datetime.strptime(dates[0], "%d/%m/%Y").strftime("%d %B")
         end_date = datetime.strptime(dates[-1], "%d/%m/%Y").strftime("%d %B %Y")
         
         return f"{start_date} - {end_date}"
     
-    def _create_event_item(self, hours: str, duration: int, event: dict, isEditable: bool = False):
+    def _create_event_item(self, hours: str, duration: int, event: dict, isEditable: bool = False) -> QWidget:
         # Fonts
         font = QFont()
         font.setFamily(u"Sans Serif Collection")
@@ -422,6 +535,19 @@ class MainController():
         return widget
 
     def _add_event(self, table: QTableWidget, colonne: int, ligne: int, duration: int, hours: str, event : dict, isEditable: bool = False):
+        """
+        Ajoute l'element graphique de l'evenement a la table souhaité et a l'emplacement souhaité
+
+        Args:
+            table (QTableWidget): _description_
+            colonne (int): _description_
+            ligne (int): _description_
+            duration (int): _description_
+            hours (str): _description_
+            event (dict): _description_
+            isEditable (bool, optional): _description_. Defaults to False.
+        """
+        
         # Création de l'item personnalisé
         custom_widget = self._create_event_item(hours, duration, event, isEditable)
 
@@ -517,12 +643,21 @@ class MainController():
         return personnes, equipes 
        
     def _edit_popup(self, event_name: str, date_debut: datetime, date_fin: datetime, lieux: list, equipes: list, personnes: list, types: list):
+       
         self.parent.ui.popupeventname.setText(event_name)
         self.parent.ui.popupdatedebut.setDateTime(date_debut)
         self.parent.ui.popupdatefin.setDateTime(date_fin)
+        
+        self.parent.ui.popuplieux.clear()
         self.parent.ui.popuplieux.addItems(lieux)
+        
+        self.parent.ui.popuptype.clear()
         self.parent.ui.popuptype.addItems(types)
+        
+        self.parent.ui.popupteams.clear()
         self.parent.ui.popupteams.addItems(equipes)
+        
+        self.parent.ui.popuppersons.clear()
         self.parent.ui.popuppersons.addItems(personnes)
         
     def _edit_existing_event(self, event_name, date_debut, date_fin, lieu, event_type, event_id):
@@ -539,7 +674,7 @@ class MainController():
         
         globals.db.edit(query, params)
     
-    def _ajouter_un_evenement(self, liste_personnes_equipes: list, event_name:str, date_debut: datetime, date_fin: datetime, lieu: str, event_type: str):
+    def _ajouter_un_nouvel_evenement(self, liste_personnes_equipes: list, event_name:str, date_debut: datetime, date_fin: datetime, lieu: str, event_type: str):
         compteur = globals.db.fetch("SELECT MAX(EvenementID) FROM EVENEMENT ")
         lieu_id : list[tuple] = globals.db.fetch("SELECT LIEU.LieuID FROM LIEU WHERE LIEU.Nom = %s", (lieu,))
         type_id : list[tuple] = globals.db.fetch("SELECT TYPE.TypeID FROM TYPE WHERE TYPE.Nom = %s", (event_type,))
@@ -576,6 +711,9 @@ class MainController():
             globals.db.edit(q, (event_id,))
             
         self._refresh_table_edit()
+    
+    def _refresh_table_planning(self):
+        self.update_calendar(self.parent.ui.planningsemaine, self.parent.planningcalendar, self.parent.ui.tableplanning, 'Planning')
         
     def _refresh_table_edit(self):
         self.update_calendar(self.parent.ui.editsemaine, self.parent.editcalendar, self.parent.ui.tableedit, 'Editer')
@@ -665,6 +803,23 @@ class MainController():
         equipes_dispo = self._equipe_libre(personne_dispo)
         return lieux_dispo, personne_dispo, equipes_dispo
     
+    def _ajouter_un_nouveau_lieu(self, nom_lieu: str):
+        compteur = globals.db.fetch("SELECT MAX(LieuID) FROM LIEU")
+        
+        query = "INSERT INTO LIEU (LieuID,Nom) VALUES (%s, %s)"
+        params= ((compteur[0][0])+1, nom_lieu)
+        
+        globals.db.edit(query, params)
+        globals.EVENT_LIEUX.append(nom_lieu)
+
+    def _ajouter_un_nouveau_type_evenement(self, nom_type_evenement: str):
+        compteur = globals.db.fetch("SELECT MAX(TypeID) FROM TYPE")
+        color = couleur_pastel()
+        query = "INSERT INTO TYPE (TypeID, Nom, Couleur) VALUES (%s, %s, %s)"
+        params = ((compteur[0][0])+1, nom_type_evenement, color)
+        
+        globals.db.edit(query, params)
+        globals.EVENT_TYPES_AND_COLORS[nom_type_evenement] = color
 
 ###########################################################################################
 ## CLASS QUI REGROUPE TOUTES LES FONCTIONS QUI SERVENT A CONTROLLER LA FENETRE DE LOGIN
@@ -678,13 +833,13 @@ class LoginController():
         Permet de verifié si l'identifiant et le mdp entré par l'utilisateur existe et sont correctes
         """
         query = f"SELECT UserName, Mdp, Prenom, NbHeure FROM EMPLOYES WHERE Username='{self.parent.ui.username.text()}'"
-        result = [element[0] for element in globals.db.fetch(query)]
-
+        result = globals.db.fetch(query)
+        print(result)
         if result:
-            hashed_password = result[1]
-            globals.PRENOM_UTILISATEUR = result[2]
-            globals.USERNAME_UTILISATEUR = result[0]
-            globals.NOMBRE_HEURES_UTILISATEUR = float(result[3])
+            hashed_password = result[0][1]
+            globals.PRENOM_UTILISATEUR = result[0][2]
+            globals.USERNAME_UTILISATEUR = result[0][0]
+            globals.NOMBRE_HEURES_UTILISATEUR = float(result[0][3])
             
             if hashed_password == hasher_mot_de_passe(self.parent.ui.password.text()):
                 self.parent.accept() # Permet de quitter la fenetre de dialogue 

@@ -69,9 +69,9 @@ class MainWindow(QMainWindow):
         ########################################################################      
         
         ## NAVIGATION DES PAGES | SIDEBAR
-        self.ui.planningBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(0))
+        self.ui.planningBtn.clicked.connect(lambda: (self.ui.stackedplanning.setCurrentIndex(0), self.controller._refresh_table_planning()))
         self.ui.timelineBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(1))
-        self.ui.editBtn.clicked.connect(lambda: self.ui.stackedplanning.setCurrentIndex(2))
+        self.ui.editBtn.clicked.connect(lambda: (self.ui.stackedplanning.setCurrentIndex(2), self.controller._refresh_table_edit()))
         self.ui.decoBtn.clicked.connect(self.disconnect)
         
         
