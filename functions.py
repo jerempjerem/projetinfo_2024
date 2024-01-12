@@ -580,6 +580,15 @@ class MainController():
         return events
 
     def _is_long_event(self, event: dict) -> bool:
+        """
+        Permet de savoir si un evenement est etalé sur plusieurs jours
+
+        Args:
+            event (dict): _description_
+
+        Returns:
+            bool: _description_
+        """
         # Garder que les dates des evenements sans les heures
         start_date_part = event['StartTime'].date()
         end_date_part = event['EndTime'].date()
@@ -590,7 +599,16 @@ class MainController():
         else:
             return True
     
-    def _split_event_by_day(self, event: dict):
+    def _split_event_by_day(self, event: dict) -> list:
+        """
+        Dans le cas ou l'evenement est etalé sur plusieurs jours on decoupe l'evenement pour chaque jour
+
+        Args:
+            event (dict): _description_
+
+        Returns:
+            _type_: _description_
+        """
         events_list = []
 
         start_time = event['StartTime']
@@ -611,6 +629,9 @@ class MainController():
         return events_list
        
     def _set_popup_to_writeonly(self):
+        """
+        Permet de ne pouvoir modifié les informations du popup
+        """
         self.parent.ui.popupeventname.setReadOnly(False)
         self.parent.ui.popupdatedebut.setReadOnly(False)
         self.parent.ui.popupdatefin.setReadOnly(False)
@@ -620,6 +641,9 @@ class MainController():
         self.parent.ui.popuppersons.setSelectionMode(QListWidget.MultiSelection)   
         
     def _set_popup_to_readonly(self):
+        """
+        Permet de ne pouvoir lire uniquement les informations du popup
+        """
         self.parent.ui.popupeventname.setReadOnly(True)
         self.parent.ui.popupdatedebut.setReadOnly(True)
         self.parent.ui.popupdatefin.setReadOnly(True)
@@ -654,7 +678,20 @@ class MainController():
         return personnes, equipes 
        
     def _edit_popup(self, event_name: str, date_debut: datetime, date_fin: datetime, lieux: list, equipes: list, personnes: list, types: list):
+        """
+        Permet de modifier visuellement les informations du popup
 
+        Args:
+            event_name (str): _description_
+            date_debut (datetime): _description_
+            date_fin (datetime): _description_
+            lieux (list): _description_
+            equipes (list): _description_
+            personnes (list): _description_
+            types (list): _description_
+        """
+        
+        
         self.parent.ui.popupeventname.setText(event_name)
         self.parent.ui.popupdatedebut.setDateTime(date_debut)
         self.parent.ui.popupdatefin.setDateTime(date_fin)
