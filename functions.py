@@ -71,15 +71,23 @@ def get_teams_managed_user():
 
 def element_distinct_list(liste: list) -> list:
     """
-    Permet de supprimer tous les doublons d'une liste
-
+    Permet de supprimer tous les doublons d'une liste tout en conservant l'ordre initial.
+    
     Args:
-        liste (list): liste a nettoyé
+        liste (list): liste à nettoyer
 
     Returns:
-        list: la liste supprimé de tous les doublons
+        list: la liste sans doublons, avec l'ordre initial préservé
     """
-    return list(set(liste))
+    seen = set()
+    result = []
+    
+    for element in liste:
+        if element not in seen:
+            seen.add(element)
+            result.append(element)
+            
+    return result
 
 def hasher_mot_de_passe(mot_de_passe: str) -> str:
     """
@@ -168,7 +176,9 @@ class MainController():
             colonne, ligne = self._get_event_position(event['StartTime'])
             
             self._add_event(table, colonne, ligne, duration, hours, event, iseditable)
-            total_heures_semaine += round(duration/2, 1)
+            
+            if event['EventType'] not in globals.TYPE_EVENT_VACANCES:
+                total_heures_semaine += round(duration/2, 1)
         
         if tab == 'Planning':
             self.parent.ui.planningnbheures.setText(f"Nombre d'heures : {total_heures_semaine}/{globals.NOMBRE_HEURES_UTILISATEUR}")
@@ -191,12 +201,13 @@ class MainController():
             personnes, equipes = self._equipe_et_personnes_event(event['Id'])
             
             if iseditable:
+                      
                 self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], element_distinct_list([event['Place']] + globals.EVENT_LIEUX),
                                  element_distinct_list(equipes + list(globals.EQUIPES_DB.keys())), element_distinct_list(personnes + globals.PERSONNES),
                                  element_distinct_list([event['EventType']] + list(globals.EVENT_TYPES_AND_COLORS.keys())))
                 self._set_popup_to_writeonly()
             else:
-                self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], [event['Place']], equipes, personnes, list(globals.EVENT_TYPES_AND_COLORS.keys()))
+                self._edit_popup(event['Nom'], event['StartTime'], event['EndTime'], [event['Place']], equipes, personnes, [event['EventType']])
                 self._set_popup_to_readonly()
         else:
             date_debut = datetime.now()
@@ -643,7 +654,7 @@ class MainController():
         return personnes, equipes 
        
     def _edit_popup(self, event_name: str, date_debut: datetime, date_fin: datetime, lieux: list, equipes: list, personnes: list, types: list):
-       
+
         self.parent.ui.popupeventname.setText(event_name)
         self.parent.ui.popupdatedebut.setDateTime(date_debut)
         self.parent.ui.popupdatefin.setDateTime(date_fin)
@@ -681,7 +692,6 @@ class MainController():
 
         query = "INSERT INTO EVENEMENT (EvenementID, Nom, DateDebut, DateFin, LieuID_ext, TypeID_ext) VALUES (%s, %s, %s, %s, %s,%s)"
         params = (compteur[0][0] + 1, event_name , date_debut, date_fin, lieu_id[0][0], type_id[0][0])
-        print(params)
         globals.db.edit(query, params)
 
         for personne in liste_personnes_equipes:
@@ -786,6 +796,7 @@ class MainController():
         return list(set(personne_libre) & set(globals.PERSONNE_GEREE_USER))
     
     def _equipe_libre(self, personne_libre: list) -> list:
+        
         equipes_libre = []
         
         for equipe, personne_equipe in globals.EQUIPES_DB.items():
@@ -798,12 +809,20 @@ class MainController():
         return list(set(equipes_libre) & set(globals.EQUIPES_GEREES_UTILISATEUR))
     
     def _lieu_equipe_personne_dispo(self, date_debut : datetime, date_fin : datetime) -> (list, list, list):
+        """
+            Renvoi les lieux, personne et equipes disponible a une certaine date
+        """
+        
         lieux_dispo = self._lieux_disponible(date_debut, date_fin)  
         personne_dispo = self._personnes_disponible(date_debut, date_fin)
         equipes_dispo = self._equipe_libre(personne_dispo)
+        
         return lieux_dispo, personne_dispo, equipes_dispo
     
     def _ajouter_un_nouveau_lieu(self, nom_lieu: str):
+        """
+        Permet d'ajouter un lieu a la bdd
+        """
         compteur = globals.db.fetch("SELECT MAX(LieuID) FROM LIEU")
         
         query = "INSERT INTO LIEU (LieuID,Nom) VALUES (%s, %s)"
@@ -813,6 +832,10 @@ class MainController():
         globals.EVENT_LIEUX.append(nom_lieu)
 
     def _ajouter_un_nouveau_type_evenement(self, nom_type_evenement: str):
+        """
+            Permet d'ajouter un nom d'evenement et lui associer une couleur a la bdd
+        """
+        
         compteur = globals.db.fetch("SELECT MAX(TypeID) FROM TYPE")
         color = couleur_pastel()
         query = "INSERT INTO TYPE (TypeID, Nom, Couleur) VALUES (%s, %s, %s)"
@@ -834,7 +857,7 @@ class LoginController():
         """
         query = f"SELECT UserName, Mdp, Prenom, NbHeure FROM EMPLOYES WHERE Username='{self.parent.ui.username.text()}'"
         result = globals.db.fetch(query)
-        print(result)
+
         if result:
             hashed_password = result[0][1]
             globals.PRENOM_UTILISATEUR = result[0][2]

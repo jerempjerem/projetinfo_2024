@@ -39,6 +39,8 @@ CURRENT_EDITED_EVENT_ID = None # Variable qui nous permets de recuperer l'id de 
 
 EVENT_KEYS = ["Id", "Nom", "Place", "StartTime", "EndTime", "EventType"] # Constante des clés qui compose le dictionnaires qui defini un evenement
 
+TYPE_EVENT_VACANCES = ['Conges']
+
 ROLES_ID = {
     "collaborateur": 1,
     "Manager": 0,
