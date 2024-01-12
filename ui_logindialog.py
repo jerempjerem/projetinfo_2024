@@ -46,9 +46,11 @@ class Ui_LoginDialog(object):
         self.leftside.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_3 = QHBoxLayout(self.leftside)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setContentsMargins(11, 70, 11, 11)
+
         self.label = QLabel(self.leftside)
         self.label.setObjectName(u"label")
-        self.label.setMaximumSize(QSize(450, 380))
+        self.label.setMaximumSize(QSize(400, 450))
         self.label.setPixmap(QPixmap(u"./icons/logo_login.png"))
         self.label.setScaledContents(True)
 
